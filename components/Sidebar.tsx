@@ -85,8 +85,13 @@ export function Sidebar({ activeSection, setActiveSection }: SidebarProps) {
         <div className={`p-6 ${collapsed ? "px-2 py-4" : ""}`}>
           <div className="flex items-center justify-between mb-6">
             {!collapsed && <h1 className="text-2xl font-bold text-white">Portfolio</h1>}
-            <button onClick={toggleCollapsed} className="p-1 hover:bg-gray-800 rounded-full">
-              {collapsed ? <Menu size={20} className="text-white" /> : <X size={20} className="text-white" />}
+            <button 
+              onClick={toggleCollapsed} 
+              className={`p-1 hover:bg-gray-800 rounded-full ${collapsed ? "flex justify-center w-full" : ""}`}
+            >
+              <span className={`${collapsed ? "w-7 flex-shrink-0 flex items-center justify-center" : ""}`}>
+                {collapsed ? <Menu size={20} className="text-white" /> : <X size={20} className="text-white" />}
+              </span>
             </button>
           </div>
   
