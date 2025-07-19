@@ -50,8 +50,8 @@ export function PlayerControls({ onToggleRightSidebar, isRightSidebarOpen }: Pla
         </div>
         <button
           onClick={onToggleRightSidebar}
-          className={`p-2 rounded hover:bg-gray-800 transition ${
-            isRightSidebarOpen ? "bg-gray-800 text-white" : "text-gray-400"
+          className={`p-2 rounded hover:bg-[#1F1F1F] transition-colors ${
+            isRightSidebarOpen ? "bg-[#1F1F1F] text-white" : "text-gray-400"
           }`}
           title="About the Artist"
         >

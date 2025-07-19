@@ -56,7 +56,6 @@ export function Sidebar({ activeSection, setActiveSection }: SidebarProps) {
   const sidebarItems = [
     ...navSections,
     ...actionSections,
-    { type: 'label', name: 'Portfolio' },
     ...portfolioSections.map(section => ({ ...section, isPortfolio: true })),
     { type: 'download', name: 'Download Resume', icon: Download },
   ]
@@ -78,7 +77,7 @@ export function Sidebar({ activeSection, setActiveSection }: SidebarProps) {
           md:translate-x-0 transition-all duration-300
           fixed md:relative z-40
           ${collapsed ? "w-16" : "w-60"}
-          bg-black text-gray-300 flex flex-col h-screen
+          bg-[#121212] text-gray-300 flex flex-col h-screen rounded-r-xl
         `}
       >
         {/* Header */}
@@ -87,7 +86,7 @@ export function Sidebar({ activeSection, setActiveSection }: SidebarProps) {
             {!collapsed && <h1 className="text-2xl font-bold text-white">Portfolio</h1>}
             <button 
               onClick={toggleCollapsed} 
-              className={`p-1 hover:bg-gray-800 rounded-full ${collapsed ? "flex justify-center w-full" : ""}`}
+              className={`p-1 hover:bg-[#1F1F1F] rounded-full transition-colors ${collapsed ? "flex justify-center w-full" : ""}`}
             >
               <span className={`${collapsed ? "w-7 flex-shrink-0 flex items-center justify-center" : ""}`}>
                 {collapsed ? <Menu size={20} className="text-white" /> : <X size={20} className="text-white" />}
@@ -113,10 +112,10 @@ export function Sidebar({ activeSection, setActiveSection }: SidebarProps) {
                 const isDownload = 'type' in item && item.type === 'download'
                 const baseClasses = `w-full flex items-center gap-x-4 px-3 py-2 rounded-lg transition-all font-medium text-left justify-start`;
                 const collapsedClasses = collapsed ? "justify-center px-2" : ""
-                const activeGradient = isPortfolio ? `bg-gradient-to-r ${'gradient' in item ? item.gradient : ''} text-white shadow-md` : "bg-gray-800 text-white"
-                const inactiveGradient = isPortfolio ? "text-white/80 hover:bg-gray-800" : "text-white/80 hover:bg-gray-800"
-                const contactClasses = isActive ? "bg-teal-500 text-white" : "text-teal-500 hover:bg-teal-500/10"
-                const downloadClasses = isDownload ? "hover:bg-gray-800 text-white/80" : ""
+                const activeGradient = isPortfolio ? `bg-gradient-to-r ${'gradient' in item ? item.gradient : ''} text-white shadow-md` : "bg-[#1F1F1F] text-white"
+                const inactiveGradient = isPortfolio ? "text-white/80 hover:bg-[#1F1F1F]" : "text-white/80 hover:bg-[#1F1F1F]"
+                const contactClasses = isActive ? "bg-teal-500 text-white" : "text-teal-500 hover:bg-[#1F1F1F]"
+                const downloadClasses = isDownload ? "hover:bg-[#1F1F1F] text-white/80" : ""
                 return (
                   <li key={item.name} className={collapsed ? "flex justify-center" : ""}>
                     <button

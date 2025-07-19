@@ -388,13 +388,14 @@ export function MainContent({ activeSection }: MainContentProps) {
   const columns = sectionColumns[activeSection] || sectionColumns["Education"]
 
   return (
-    <div className={`flex-1 bg-gradient-to-b ${currentData.gradient} text-white p-4 md:p-8 overflow-y-auto`}>
-      {/* Section Header */}
-      <div className="mb-8">
-        <p className="text-sm font-semibold">PORTFOLIO</p>
-        <h1 className="text-3xl md:text-5xl font-bold mt-2 mb-4">{currentData.title}</h1>
-        <p className="text-sm text-gray-300">{currentData.description}</p>
-      </div>
+    <div className="flex-1 bg-[#121212] text-white overflow-y-auto rounded-xl">
+      <div className={`bg-gradient-to-b ${currentData.gradient} rounded-t-xl p-4 md:p-8`}>
+        {/* Section Header */}
+        <div className="mb-8">
+          <p className="text-sm font-semibold">PORTFOLIO</p>
+          <h1 className="text-4xl md:text-6xl font-bold mt-2 mb-4">{currentData.title}</h1>
+          <p className="text-base text-gray-300">{currentData.description}</p>
+        </div>
 
       {/* Play Button */}
       <div className="mb-8">
@@ -403,72 +404,76 @@ export function MainContent({ activeSection }: MainContentProps) {
           Play
         </button>
       </div>
-
-      {/* Responsive table for larger screens */}
-      <div className="hidden md:block">
-        <table className="w-full text-left text-sm text-gray-300">
-          <thead>
-            <tr className="border-b border-gray-700">
-              <th className="pb-3">#</th>
-              {columns.map((col) => (
-                <th key={col.field} className="pb-3">{col.label}</th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {currentData.items.map((item, index) => (
-              <tr key={index} className="hover:bg-white/10">
-                <td className="py-3">{index + 1}</td>
-                {columns.map((col, colIdx) => (
-                  <td className="py-3" key={col.field}>
-                    {col.icon ? (
-                      <div className="flex items-center">
-                        <Image
-                          src={item.icon || "/placeholder.svg?height=40&width=40"}
-                          width={40}
-                          height={40}
-                          alt={`${item.title} icon`}
-                          className={`mr-3 rounded ${item.title === "GitHub" ? "filter invert" : ""}`}
-                        />
-                        <span className="text-white">{(item as any)[col.field]}</span>
-                      </div>
-                    ) : (
-                      <span>{(item as any)[col.field]}</span>
-                    )}
-                  </td>
+      </div>
+      
+      {/* Table content in bottom section */}
+      <div className="p-4 md:p-8">
+        {/* Responsive table for larger screens */}
+        <div className="hidden md:block">
+          <table className="w-full text-left text-base text-gray-300">
+            <thead>
+              <tr className="border-b border-gray-700">
+                <th className="pb-3 text-lg font-semibold">#</th>
+                {columns.map((col) => (
+                  <th key={col.field} className="pb-3 text-lg font-semibold">{col.label}</th>
                 ))}
               </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+            </thead>
+            <tbody>
+              {currentData.items.map((item, index) => (
+                <tr key={index} className="hover:bg-white/10">
+                  <td className="py-3">{index + 1}</td>
+                  {columns.map((col, colIdx) => (
+                    <td className="py-3" key={col.field}>
+                      {col.icon ? (
+                        <div className="flex items-center">
+                          <Image
+                            src={item.icon || "/placeholder.svg?height=40&width=40"}
+                            width={40}
+                            height={40}
+                            alt={`${item.title} icon`}
+                            className={`mr-3 rounded ${item.title === "GitHub" ? "filter invert" : ""}`}
+                          />
+                          <span className="text-white text-lg font-medium">{(item as any)[col.field]}</span>
+                        </div>
+                      ) : (
+                        <span className="text-lg">{(item as any)[col.field]}</span>
+                      )}
+                    </td>
+                  ))}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
 
-      {/* Card layout for mobile */}
-      <div className="md:hidden space-y-4">
-        {currentData.items.map((item, index) => (
-          <div key={index} className="bg-white/5 p-4 rounded-lg hover:bg-white/10">
-            <div className="flex items-center mb-2">
-              <span className="text-sm text-gray-400 mr-2">{index + 1}</span>
-              {columns[0].icon && (
-                <Image
-                  src={item.icon || "/placeholder.svg?height=40&width=40"}
-                  width={40}
-                  height={40}
-                  alt={`${item.title} icon`}
-                  className={`mr-3 rounded ${item.title === "GitHub" ? "filter invert" : ""}`}
-                />
-              )}
-              <div>
-                <p className="text-white font-medium">{(item as any)[columns[0].field]}</p>
+        {/* Card layout for mobile */}
+        <div className="md:hidden space-y-4">
+          {currentData.items.map((item, index) => (
+            <div key={index} className="bg-white/5 p-4 rounded-lg hover:bg-white/10">
+              <div className="flex items-center mb-2">
+                <span className="text-base text-gray-400 mr-2">{index + 1}</span>
+                {columns[0].icon && (
+                  <Image
+                    src={item.icon || "/placeholder.svg?height=40&width=40"}
+                    width={40}
+                    height={40}
+                    alt={`${item.title} icon`}
+                    className={`mr-3 rounded ${item.title === "GitHub" ? "filter invert" : ""}`}
+                  />
+                )}
+                <div>
+                  <p className="text-white font-medium text-lg">{(item as any)[columns[0].field]}</p>
+                </div>
               </div>
+              {columns.slice(1).map((col) => (
+                <div key={col.field} className="ml-8 pl-3 text-base text-gray-300">
+                  <span className="font-semibold">{col.label}: </span>{(item as any)[col.field]}
+                </div>
+              ))}
             </div>
-            {columns.slice(1).map((col) => (
-              <div key={col.field} className="ml-8 pl-3 text-sm text-gray-300">
-                <span className="font-semibold">{col.label}: </span>{(item as any)[col.field]}
-              </div>
-            ))}
-          </div>
-        ))}
+          ))}
+                </div>
       </div>
     </div>
   )

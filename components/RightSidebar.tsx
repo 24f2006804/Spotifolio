@@ -56,7 +56,7 @@ export function RightSidebar({ isOpen, onClose, setActiveSection }: RightSidebar
 
   return (
     <div
-      className="fixed right-0 top-0 h-full w-96 bg-black text-white z-30 group"
+      className="absolute right-0 top-0 h-full w-96 bg-[#121212] text-white z-30 group rounded-xl"
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
       style={{ transition: 'width 0.3s' }}
@@ -74,15 +74,11 @@ export function RightSidebar({ isOpen, onClose, setActiveSection }: RightSidebar
           {/* Large background image with fade */}
           <div className="relative w-full" style={{ height: 340 }}>
             <div
-              className="w-full h-full bg-cover bg-center"
+              className="w-full h-full bg-cover bg-center rounded-t-xl"
               style={{
                 backgroundImage: `url(${aboutData.backgroundImage})`,
                 backgroundSize: 'cover',
-                backgroundPosition: 'center',
-                borderTopLeftRadius: 0,
-                borderTopRightRadius: 0,
-                borderBottomLeftRadius: 0,
-                borderBottomRightRadius: 0
+                backgroundPosition: 'center'
               }}
             />
             {/* Fade overlay at bottom */}
@@ -114,13 +110,13 @@ export function RightSidebar({ isOpen, onClose, setActiveSection }: RightSidebar
               <button className="text-sm text-gray-400 hover:text-white" onClick={goToEducation}>Show all</button>
             </div>
             <div
-              className="bg-gray-900/50 p-4 rounded-lg cursor-pointer hover:bg-gray-800 transition"
+              className="bg-[#1F1F1F] p-4 rounded-lg cursor-pointer hover:bg-[#2A2A2A] transition-colors"
               onClick={goToEducation}
             >
               <h4 className="font-medium text-white mb-1">{aboutData.education.institute}</h4>
               <p className="text-sm text-gray-400">{aboutData.education.title}</p>
               <button
-                className="mt-2 px-4 py-1 border border-gray-600 rounded-full text-sm hover:bg-gray-800"
+                className="mt-2 px-4 py-1 border border-gray-600 rounded-full text-sm hover:bg-[#2A2A2A] transition-colors"
                 onClick={goToEducation}
               >
                 Follow
