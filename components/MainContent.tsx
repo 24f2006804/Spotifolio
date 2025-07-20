@@ -2,6 +2,7 @@
 
 import { Play, Download } from "lucide-react"
 import Image from "next/image"
+import { ScrollArea } from "@/components/ui/scroll-area"
 
 const portfolioData = {
   Education: {
@@ -388,7 +389,7 @@ export function MainContent({ activeSection }: MainContentProps) {
   const columns = sectionColumns[activeSection] || sectionColumns["Education"]
 
   return (
-    <div className="flex-1 bg-[#121212] text-white overflow-y-auto rounded-xl h-full">
+    <ScrollArea className="flex-1 bg-[#121212] text-white rounded-xl h-full">
       <div className={`bg-gradient-to-b ${currentData.gradient} rounded-t-xl p-4 md:p-8 relative`}>
         {/* Fade gradient overlay */}
         <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-[#121212] to-transparent pointer-events-none"></div>
@@ -477,6 +478,6 @@ export function MainContent({ activeSection }: MainContentProps) {
           ))}
           </div>
       </div>
-    </div>
+    </ScrollArea>
   )
 }
