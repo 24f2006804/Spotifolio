@@ -29,9 +29,11 @@ const portfolioSections = [
 interface SidebarProps {
   activeSection: string
   setActiveSection: (section: string) => void
+  width: number
+  setWidth: (width: number) => void
 }
 
-export function Sidebar({ activeSection, setActiveSection }: SidebarProps) {
+export function Sidebar({ activeSection, setActiveSection, width, setWidth }: SidebarProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [collapsed, setCollapsed] = useState(false)
 
@@ -69,17 +71,39 @@ export function Sidebar({ activeSection, setActiveSection }: SidebarProps) {
       >
         {mobileMenuOpen ? <X size={24} className="text-white" /> : <Menu size={24} className="text-white" />}
       </button>
-  
+
       {/* Sidebar container */}
       <div
         className={`
           ${mobileMenuOpen ? "translate-x-0" : "-translate-x-full"}
           md:translate-x-0 transition-all duration-300
           fixed md:relative z-40
-          ${collapsed ? "w-16" : "w-60"}
           bg-[#121212] text-gray-300 flex flex-col h-screen rounded-r-xl
         `}
+        style={{ width: collapsed ? 64 : width }}
       >
+        {/* Resize handle */}
+        <div 
+          className="absolute right-0 top-0 w-1 h-full cursor-col-resize hover:bg-white/20 transition-colors"
+          onMouseDown={(e) => {
+            e.preventDefault()
+            const startX = e.clientX
+            const startWidth = width
+            
+            const handleMouseMove = (e: MouseEvent) => {
+              const newWidth = Math.max(200, Math.min(400, startWidth + (e.clientX - startX)))
+              setWidth(newWidth)
+            }
+            
+            const handleMouseUp = () => {
+              document.removeEventListener('mousemove', handleMouseMove)
+              document.removeEventListener('mouseup', handleMouseUp)
+            }
+            
+            document.addEventListener('mousemove', handleMouseMove)
+            document.addEventListener('mouseup', handleMouseUp)
+          }}
+        />
         {/* Header */}
         <div className={`p-6 ${collapsed ? "px-2 py-4" : ""}`}>
           <div className="flex items-center justify-between mb-6">
@@ -122,7 +146,7 @@ export function Sidebar({ activeSection, setActiveSection }: SidebarProps) {
                       onClick={() => {
                         if (isPortfolio) {
                           setActiveSection(item.name)
-                          if (mobileMenuOpen) setMobileMenuOpen(false)
+                        if (mobileMenuOpen) setMobileMenuOpen(false)
                         } else if (isDownload) {
                           generateResume()
                         }
@@ -153,7 +177,7 @@ export function Sidebar({ activeSection, setActiveSection }: SidebarProps) {
                   </li>
                 )
               })}
-            </ul>
+              </ul>
           </ScrollArea>
         </div>
   

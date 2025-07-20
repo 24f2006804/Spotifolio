@@ -8,9 +8,11 @@ interface RightSidebarProps {
   isOpen: boolean
   onClose: () => void
   setActiveSection?: (section: string) => void
+  width: number
+  setWidth: (width: number) => void
 }
 
-export function RightSidebar({ isOpen, onClose, setActiveSection }: RightSidebarProps) {
+export function RightSidebar({ isOpen, onClose, setActiveSection, width, setWidth }: RightSidebarProps) {
   const [hovered, setHovered] = useState(false)
   if (!isOpen) return null
 
@@ -54,12 +56,18 @@ export function RightSidebar({ isOpen, onClose, setActiveSection }: RightSidebar
     else window.location.hash = "#Education"
   }
 
+  // Handler for on tour section click
+  const goToWorkExperience = () => {
+    if (setActiveSection) setActiveSection("Work Experience")
+    else window.location.hash = "#Work Experience"
+  }
+
   return (
     <div
-      className="absolute right-0 top-0 h-full w-96 bg-[#121212] text-white z-30 group rounded-xl"
+      className="absolute right-2 top-0 h-full bg-[#121212] text-white z-30 group rounded-xl"
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
-      style={{ transition: 'width 0.3s' }}
+      style={{ width: width, transition: 'width 0.3s', height: '100%', top: 0 }}
     >
       {/* Collapse button, only visible on hover */}
       <button
@@ -69,6 +77,30 @@ export function RightSidebar({ isOpen, onClose, setActiveSection }: RightSidebar
       >
         <ChevronRight size={24} />
       </button>
+      
+      {/* Resize handle */}
+      <div 
+        className="absolute left-0 top-0 w-1 h-full cursor-col-resize hover:bg-white/20 transition-colors z-50"
+        onMouseDown={(e) => {
+          e.preventDefault()
+          e.stopPropagation()
+          const startX = e.clientX
+          const startWidth = width
+          
+          const handleMouseMove = (e: MouseEvent) => {
+            const newWidth = Math.max(300, Math.min(500, startWidth - (e.clientX - startX)))
+            setWidth(newWidth)
+          }
+          
+          const handleMouseUp = () => {
+            document.removeEventListener('mousemove', handleMouseMove)
+            document.removeEventListener('mouseup', handleMouseUp)
+          }
+          
+          document.addEventListener('mousemove', handleMouseMove)
+          document.addEventListener('mouseup', handleMouseUp)
+        }}
+      />
       <ScrollArea className="h-full">
         <div className="p-0">
           {/* Large background image with fade */}
@@ -81,6 +113,10 @@ export function RightSidebar({ isOpen, onClose, setActiveSection }: RightSidebar
                 backgroundPosition: 'center'
               }}
             />
+            {/* About The Artist text */}
+            <div className="absolute top-2 left-6">
+              <h2 className="text-2xl font-bold text-white">About The Artist</h2>
+            </div>
             {/* Fade overlay at bottom */}
             <div className="absolute bottom-0 left-0 w-full h-24 bg-gradient-to-t from-black to-transparent pointer-events-none" />
           </div>
@@ -128,11 +164,11 @@ export function RightSidebar({ isOpen, onClose, setActiveSection }: RightSidebar
           <div className="px-6 mb-6">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-semibold">On tour</h3>
-              <button className="text-sm text-gray-400 hover:text-white">Show all</button>
+              <button className="text-sm text-gray-400 hover:text-white" onClick={goToWorkExperience}>Show all</button>
             </div>
             <div className="space-y-4">
               {aboutData.workExperiences.map((experience, index) => (
-                <div key={index} className="flex items-start space-x-4">
+                <div key={index} className="flex items-start space-x-4 cursor-pointer hover:bg-[#1F1F1F] p-2 rounded transition-colors" onClick={goToWorkExperience}>
                   <div className="text-center">
                     <div className="text-sm text-gray-400">Jan</div>
                     <div className="text-2xl font-bold">{experience.date.slice(-2)}</div>

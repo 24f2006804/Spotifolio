@@ -4,7 +4,7 @@ import { ChevronLeft, ChevronRight, Search } from "lucide-react"
 
 export function TopBar() {
   return (
-    <div className="bg-black px-6 py-4 flex items-center justify-between">
+    <div className="bg-black px-6 py-3 flex items-center justify-between">
       {/* Navigation buttons - extreme left */}
       <div className="flex items-center gap-2">
         <button className="w-8 h-8 bg-black/70 hover:bg-black/90 rounded-full flex items-center justify-center transition-colors">

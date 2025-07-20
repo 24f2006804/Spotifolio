@@ -388,8 +388,10 @@ export function MainContent({ activeSection }: MainContentProps) {
   const columns = sectionColumns[activeSection] || sectionColumns["Education"]
 
   return (
-    <div className="flex-1 bg-[#121212] text-white overflow-y-auto rounded-xl">
-      <div className={`bg-gradient-to-b ${currentData.gradient} rounded-t-xl p-4 md:p-8`}>
+    <div className="flex-1 bg-[#121212] text-white overflow-y-auto rounded-xl h-full">
+      <div className={`bg-gradient-to-b ${currentData.gradient} rounded-t-xl p-4 md:p-8 relative`}>
+        {/* Fade gradient overlay */}
+        <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-[#121212] to-transparent pointer-events-none"></div>
         {/* Section Header */}
         <div className="mb-8">
           <p className="text-sm font-semibold">PORTFOLIO</p>
@@ -400,80 +402,80 @@ export function MainContent({ activeSection }: MainContentProps) {
       {/* Play Button */}
       <div className="mb-8">
         <button className="bg-green-500 text-black font-semibold py-2 px-6 md:py-3 md:px-8 rounded-full hover:bg-green-400 flex items-center">
-          <Play fill="currentColor" size={20} className="inline mr-2" />
-          Play
+              <Play fill="currentColor" size={20} className="inline mr-2" />
+              Play
         </button>
       </div>
       </div>
-      
+
       {/* Table content in bottom section */}
       <div className="p-4 md:p-8">
-        {/* Responsive table for larger screens */}
-        <div className="hidden md:block">
+      {/* Responsive table for larger screens */}
+      <div className="hidden md:block">
           <table className="w-full text-left text-base text-gray-300">
-            <thead>
-              <tr className="border-b border-gray-700">
+          <thead>
+            <tr className="border-b border-gray-700">
                 <th className="pb-3 text-lg font-semibold">#</th>
                 {columns.map((col) => (
                   <th key={col.field} className="pb-3 text-lg font-semibold">{col.label}</th>
                 ))}
-              </tr>
-            </thead>
-            <tbody>
-              {currentData.items.map((item, index) => (
-                <tr key={index} className="hover:bg-white/10">
-                  <td className="py-3">{index + 1}</td>
+            </tr>
+          </thead>
+          <tbody>
+            {currentData.items.map((item, index) => (
+              <tr key={index} className="hover:bg-white/10">
+                <td className="py-3">{index + 1}</td>
                   {columns.map((col, colIdx) => (
                     <td className="py-3" key={col.field}>
                       {col.icon ? (
-                        <div className="flex items-center">
-                          <Image
-                            src={item.icon || "/placeholder.svg?height=40&width=40"}
-                            width={40}
-                            height={40}
-                            alt={`${item.title} icon`}
-                            className={`mr-3 rounded ${item.title === "GitHub" ? "filter invert" : ""}`}
-                          />
+                  <div className="flex items-center">
+                    <Image
+                      src={item.icon || "/placeholder.svg?height=40&width=40"}
+                      width={40}
+                      height={40}
+                      alt={`${item.title} icon`}
+                      className={`mr-3 rounded ${item.title === "GitHub" ? "filter invert" : ""}`}
+                    />
                           <span className="text-white text-lg font-medium">{(item as any)[col.field]}</span>
-                        </div>
+                    </div>
                       ) : (
                         <span className="text-lg">{(item as any)[col.field]}</span>
                       )}
-                    </td>
+                </td>
                   ))}
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
 
-        {/* Card layout for mobile */}
-        <div className="md:hidden space-y-4">
-          {currentData.items.map((item, index) => (
-            <div key={index} className="bg-white/5 p-4 rounded-lg hover:bg-white/10">
-              <div className="flex items-center mb-2">
+      {/* Card layout for mobile */}
+      <div className="md:hidden space-y-4">
+        {currentData.items.map((item, index) => (
+          <div key={index} className="bg-white/5 p-4 rounded-lg hover:bg-white/10">
+            <div className="flex items-center mb-2">
                 <span className="text-base text-gray-400 mr-2">{index + 1}</span>
                 {columns[0].icon && (
-                  <Image
-                    src={item.icon || "/placeholder.svg?height=40&width=40"}
-                    width={40}
-                    height={40}
-                    alt={`${item.title} icon`}
-                    className={`mr-3 rounded ${item.title === "GitHub" ? "filter invert" : ""}`}
-                  />
+              <Image
+                src={item.icon || "/placeholder.svg?height=40&width=40"}
+                width={40}
+                height={40}
+                alt={`${item.title} icon`}
+                className={`mr-3 rounded ${item.title === "GitHub" ? "filter invert" : ""}`}
+              />
                 )}
-                <div>
+              <div>
                   <p className="text-white font-medium text-lg">{(item as any)[columns[0].field]}</p>
                 </div>
               </div>
               {columns.slice(1).map((col) => (
                 <div key={col.field} className="ml-8 pl-3 text-base text-gray-300">
                   <span className="font-semibold">{col.label}: </span>{(item as any)[col.field]}
-                </div>
+            </div>
               ))}
             </div>
           ))}
-                </div>
+          </div>
       </div>
     </div>
   )
