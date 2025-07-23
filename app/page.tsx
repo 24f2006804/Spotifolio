@@ -16,6 +16,7 @@ export default function Home() {
   const toggleRightSidebar = () => {
     setIsRightSidebarOpen(!isRightSidebarOpen)
   }
+  const openRightSidebar = () => setIsRightSidebarOpen(true)
 
   return (
     <div className="flex flex-col h-screen bg-black">
@@ -28,7 +29,7 @@ export default function Home() {
           setWidth={setLeftSidebarWidth}
         />
                 <div className={`flex-1 flex flex-col transition-all duration-300`} style={{ marginRight: isRightSidebarOpen ? rightSidebarWidth + 8 : 0 }}>
-        <MainContent activeSection={activeSection} />
+        <MainContent activeSection={activeSection} setActiveSection={setActiveSection} onOpenRightSidebar={openRightSidebar} />
         </div>
         <RightSidebar 
           isOpen={isRightSidebarOpen} 

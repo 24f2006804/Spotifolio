@@ -1,8 +1,9 @@
 "use client"
 
-import { Play, Download } from "lucide-react"
+import { Play, Download, Shuffle } from "lucide-react"
 import Image from "next/image"
 import { ScrollArea } from "@/components/ui/scroll-area"
+import { generateResume } from "../utils/resumeGenerator"
 
 const portfolioData = {
   Education: {
@@ -382,11 +383,23 @@ const sectionColumns: Record<string, { label: string; field: string; icon?: bool
 
 interface MainContentProps {
   activeSection: string
+  setActiveSection: (section: string) => void
+  onOpenRightSidebar: () => void
 }
 
-export function MainContent({ activeSection }: MainContentProps) {
+export function MainContent({ activeSection, setActiveSection, onOpenRightSidebar }: MainContentProps) {
   const currentData = portfolioData[activeSection as keyof typeof portfolioData] || portfolioData["Education"]
   const columns = sectionColumns[activeSection] || sectionColumns["Education"]
+  const sectionNames = Object.keys(portfolioData)
+
+  // Handler for shuffle
+  const handleShuffle = () => {
+    let randomSection = activeSection
+    while (randomSection === activeSection) {
+      randomSection = sectionNames[Math.floor(Math.random() * sectionNames.length)]
+    }
+    setActiveSection(randomSection)
+  }
 
   return (
     <ScrollArea className="flex-1 bg-[#121212] text-white rounded-xl h-full">
@@ -400,15 +413,35 @@ export function MainContent({ activeSection }: MainContentProps) {
           <p className="text-base text-gray-300">{currentData.description}</p>
         </div>
 
-      {/* Play Button */}
-      <div className="mb-8">
-        <button className="bg-green-500 text-black font-semibold py-2 px-6 md:py-3 md:px-8 rounded-full hover:bg-green-400 flex items-center">
-              <Play fill="currentColor" size={20} className="inline mr-2" />
-              Play
-        </button>
+        {/* Spotify-style controls */}
+        <div className="mb-8 flex items-center gap-4">
+          {/* Play Button */}
+          <a
+            href="https://drive.google.com/uc?export=download&id=1ATfZjD1YXQlBkNpUVVPtonMGkCvjYo-A"
+            download
+            className="w-14 h-14 flex items-center justify-center rounded-full bg-green-500 hover:bg-green-400 transition-colors shadow-lg focus:outline-none"
+            title="Play Resume"
+          >
+            <Play size={36} className="text-black" />
+          </a>
+          {/* Shuffle Button */}
+          <button
+            onClick={handleShuffle}
+            className="w-12 h-12 flex items-center justify-center rounded-full bg-[#232323] hover:bg-[#333] transition-colors text-white"
+            title="Shuffle Section"
+          >
+            <Shuffle size={28} />
+          </button>
+          {/* Download Button */}
+          <button
+            onClick={generateResume}
+            className="w-12 h-12 flex items-center justify-center rounded-full bg-[#232323] hover:bg-[#333] transition-colors text-white"
+            title="Download Resume (PDF)"
+          >
+            <Download size={28} />
+          </button>
+        </div>
       </div>
-      </div>
-
       {/* Table content in bottom section */}
       <div className="p-4 md:p-8">
       {/* Responsive table for larger screens */}
@@ -424,7 +457,7 @@ export function MainContent({ activeSection }: MainContentProps) {
           </thead>
           <tbody>
             {currentData.items.map((item, index) => (
-              <tr key={index} className="hover:bg-white/10">
+              <tr key={index} className="hover:bg-white/10 cursor-pointer" onClick={onOpenRightSidebar}>
                 <td className="py-3">{index + 1}</td>
                   {columns.map((col, colIdx) => (
                     <td className="py-3" key={col.field}>
@@ -453,7 +486,7 @@ export function MainContent({ activeSection }: MainContentProps) {
       {/* Card layout for mobile */}
       <div className="md:hidden space-y-4">
         {currentData.items.map((item, index) => (
-          <div key={index} className="bg-white/5 p-4 rounded-lg hover:bg-white/10">
+          <div key={index} className="bg-white/5 p-4 rounded-lg hover:bg-white/10 cursor-pointer" onClick={onOpenRightSidebar}>
             <div className="flex items-center mb-2">
                 <span className="text-base text-gray-400 mr-2">{index + 1}</span>
                 {columns[0].icon && (

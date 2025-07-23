@@ -59,7 +59,6 @@ export function Sidebar({ activeSection, setActiveSection, width, setWidth }: Si
     ...navSections,
     ...actionSections,
     ...portfolioSections.map(section => ({ ...section, isPortfolio: true })),
-    { type: 'download', name: 'Download Resume', icon: Download },
   ]
 
   return (
