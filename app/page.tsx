@@ -28,7 +28,7 @@ export default function Home() {
           setWidth={setLeftSidebarWidth}
         />
                 <div className={`flex-1 flex flex-col transition-all duration-300`} style={{ marginRight: isRightSidebarOpen ? rightSidebarWidth + 8 : 0 }}>
-          <MainContent activeSection={activeSection} />
+        <MainContent activeSection={activeSection} />
         </div>
         <RightSidebar 
           isOpen={isRightSidebarOpen} 

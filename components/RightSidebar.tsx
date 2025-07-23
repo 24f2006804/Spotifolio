@@ -3,6 +3,9 @@
 import { useState } from "react"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { ChevronRight } from "lucide-react"
+import { Dialog, DialogContent, DialogOverlay, DialogTitle } from "@/components/ui/dialog"
+import { ScrollArea as ModalScrollArea } from "@/components/ui/scroll-area"
+import { Users, Headphones, MapPin } from "lucide-react"
 
 interface RightSidebarProps {
   isOpen: boolean
@@ -14,6 +17,7 @@ interface RightSidebarProps {
 
 export function RightSidebar({ isOpen, onClose, setActiveSection, width, setWidth }: RightSidebarProps) {
   const [hovered, setHovered] = useState(false)
+  const [aboutOpen, setAboutOpen] = useState(false)
   if (!isOpen) return null
 
   const aboutData = {
@@ -21,7 +25,8 @@ export function RightSidebar({ isOpen, onClose, setActiveSection, width, setWidt
     tagline: "Building meaningful things with code.",
     backgroundImage: "https://github.com/agnij-dutta/agnij-dutta/blob/main/background-mic.jpeg?raw=true",
     avatar: "https://avatars.githubusercontent.com/u/126397667?v=4",
-    bio: "In the realm of technologies and innovation, where code weaves enchanting solutions, there exists a young developer named Agnij Dutta. His heart, like a dedicated processor, beats with the rhythm of continuous learning and growth.",
+    shortBio: "In the realm of technologies and innovation, where code weaves enchanting solutions, there exists a young developer named Agnij Dutta...",
+    fullBio: `Agnij Dutta is a passionate full stack and blockchain developer with a love for building meaningful products. With a background in Data Science from IIT Madras, Agnij has worked on a wide range of projects from AI to Web3, always focusing on human-centered design and impactful solutions. He believes in continuous learning, open source, and the power of technology to connect people.\n\nAgnij's journey includes major contributions to open source, leadership in hackathons, and a drive to make technology accessible and ethical. When not coding, he enjoys music, reading, and exploring new ideas.`,
     education: {
       title: "BS Data Science and Applications",
       institute: "Indian Institute of Technology, Madras",
@@ -121,23 +126,78 @@ export function RightSidebar({ isOpen, onClose, setActiveSection, width, setWidt
             <div className="absolute bottom-0 left-0 w-full h-24 bg-gradient-to-t from-black to-transparent pointer-events-none" />
           </div>
 
-          {/* Name, avatar, tagline */}
-          <div className="flex items-center px-6 -mt-12 mb-2 relative z-10">
-            <img
-              src={aboutData.avatar}
-              alt="Profile"
-              className="w-16 h-16 rounded-full border-4 border-black shadow-lg object-cover mr-4"
-            />
-            <div>
-              <h1 className="text-3xl font-bold leading-tight">{aboutData.name}</h1>
-              <p className="text-sm text-gray-400 mt-1">{aboutData.tagline}</p>
+          {/* Name, avatar, tagline, short bio - clickable area */}
+          <div
+            className="flex flex-col gap-2 px-6 -mt-12 mb-2 relative z-10 cursor-pointer hover:bg-[#232323] rounded-xl transition-colors"
+            onClick={() => setAboutOpen(true)}
+            role="button"
+            tabIndex={0}
+          >
+            <div className="flex items-center">
+              <img
+                src={aboutData.avatar}
+                alt="Profile"
+                className="w-16 h-16 rounded-full border-4 border-black shadow-lg object-cover mr-4"
+              />
+              <div>
+                <h1 className="text-3xl font-bold leading-tight underline hover:text-green-400 transition-colors">{aboutData.name}</h1>
+                <p className="text-sm text-gray-400 mt-1">{aboutData.tagline}</p>
+              </div>
             </div>
+            <p className="text-sm text-gray-300 leading-relaxed mb-2">
+              {aboutData.shortBio} <button className="text-green-400 underline ml-1" onClick={e => { e.stopPropagation(); setAboutOpen(true); }}>View more</button>
+            </p>
           </div>
 
-          {/* Bio */}
-          <div className="px-6 mb-6">
-            <p className="text-sm text-gray-300 leading-relaxed">{aboutData.bio}</p>
-          </div>
+          {/* Modal for About section */}
+          <Dialog open={aboutOpen} onOpenChange={setAboutOpen}>
+            <DialogOverlay className="bg-black/40" />
+            <DialogContent className="bg-[#181818] rounded-2xl max-w-3xl w-full p-0 text-white flex flex-row items-stretch shadow-2xl border-none overflow-hidden">
+              <DialogTitle className="sr-only">{aboutData.name}</DialogTitle>
+              {/* Left column: avatar, name, tagline, stats */}
+              <div className="flex flex-col items-center justify-center w-80 min-w-[320px] bg-[#232323] p-8 border-r border-[#222]">
+                <img
+                  src={aboutData.avatar}
+                  alt="Profile"
+                  className="w-24 h-24 rounded-full border-4 border-black shadow-lg object-cover mb-4"
+                />
+                <h1 className="text-2xl font-bold mb-1 text-center">{aboutData.name}</h1>
+                <p className="text-base text-gray-400 mb-6 text-center">{aboutData.tagline}</p>
+                {/* Fake stats */}
+                <div className="flex flex-col gap-4 w-full">
+                  <div className="flex items-center gap-3">
+                    <Users className="text-green-400" size={22} />
+                    <div>
+                      <div className="text-lg font-semibold">10,621,373</div>
+                      <div className="text-xs text-gray-400">Followers</div>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <Headphones className="text-green-400" size={22} />
+                    <div>
+                      <div className="text-lg font-semibold">2,579,078</div>
+                      <div className="text-xs text-gray-400">Monthly Listeners</div>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <MapPin className="text-green-400" size={22} />
+                    <div>
+                      <div className="text-lg font-semibold">Kolkata, IN</div>
+                      <div className="text-xs text-gray-400">Location</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              {/* Right column: about, scrollable */}
+              <div className="flex-1 p-8 flex flex-col">
+                <ModalScrollArea className="h-full max-h-[1200px] pr-2">
+                  <div className="text-base text-gray-300 whitespace-pre-line text-left leading-relaxed">
+                    {aboutData.fullBio}
+                  </div>
+                </ModalScrollArea>
+              </div>
+            </DialogContent>
+          </Dialog>
 
           {/* Credits Section */}
           <div className="px-6 mb-8">
