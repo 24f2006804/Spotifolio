@@ -52,7 +52,7 @@ export default function Home() {
 
   return (
     <div className="flex flex-col h-screen bg-black">
-      <TopBar onBack={goBack} onForward={goForward} canGoBack={historyIndex > 0} canGoForward={historyIndex < history.length - 1} />
+      <TopBar onBack={goBack} onForward={goForward} canGoBack={historyIndex > 0} canGoForward={historyIndex < history.length - 1} setActiveSection={setActiveSection} />
       <div className="flex flex-1 overflow-hidden relative gap-2 px-2">
         <Sidebar 
           activeSection={activeSection} 

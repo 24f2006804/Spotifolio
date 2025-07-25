@@ -331,6 +331,8 @@ const portfolioData = {
   },
 }
 
+export { portfolioData }
+
 const sectionColumns: Record<string, { label: string; field: string; icon?: boolean }[]> = {
   "Education": [
     { label: "Degree", field: "title", icon: true },
