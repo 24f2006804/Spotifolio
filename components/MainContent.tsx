@@ -4,6 +4,9 @@ import { Play, Download, Shuffle } from "lucide-react"
 import Image from "next/image"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { generateResume } from "../utils/resumeGenerator"
+import { useEffect, useState } from "react"
+import { fetchGitHubProjects, CategorizedProject } from "@/lib/github"
+import { Loading, LoadingRow, LoadingCard } from "@/components/ui/loading"
 
 const portfolioData = {
   Education: {
@@ -17,7 +20,7 @@ const portfolioData = {
         type: "Major: Data Science | Minor: Machine Learning",
         company: "Indian Institute of Technology, Madras",
         duration: "2028",
-        icon: "https://skillicons.dev/icons?i=python,r",
+        icon: "/iit-madras-logo.svg",
       },
     ],
   },
@@ -32,14 +35,14 @@ const portfolioData = {
         type: "Built features to boost admin productivity by 85%",
         company: "Workwise",
         duration: "2025-present",
-        icon: "https://skillicons.dev/icons?i=react,nodejs",
+        icon: "/workwise.png",
       },
       {
         title: "Developer Advocate",
         type: "Community growth and maintenance",
         company: "HackQuest",
         duration: "2024-present",
-        icon: "https://skillicons.dev/icons?i=solidity,rust",
+        icon: "/hackquest.webp",
       },
       {
         title: "Data Science Intern",
@@ -55,129 +58,21 @@ const portfolioData = {
     subtitle: "Machine Learning & Data Science",
     description: "TensorFlow • PyTorch • OpenCV • Data Analysis",
     gradient: "from-purple-900 to-black",
-    items: [
-      {
-        title: "Computer Vision System",
-        type: "OpenCV, Python",
-        company: "Personal Project",
-        duration: "2024",
-        icon: "https://skillicons.dev/icons?i=python",
-      },
-      {
-        title: "Predictive Analytics Tool",
-        type: "TensorFlow, Python",
-        company: "Academic Project",
-        duration: "2023",
-        icon: "https://skillicons.dev/icons?i=python",
-      },
-      {
-        title: "Data Visualization Dashboard",
-        type: "R, D3.js",
-        company: "Course Project",
-        duration: "2023",
-        icon: "https://skillicons.dev/icons?i=r",
-      },
-      {
-        title: "Natural Language Processor",
-        type: "PyTorch, NLTK",
-        company: "Research Project",
-        duration: "2022",
-        icon: "https://skillicons.dev/icons?i=python",
-      },
-      {
-        title: "Machine Learning Model",
-        type: "Scikit-learn, Python",
-        company: "Hackathon Project",
-        duration: "2022",
-        icon: "https://skillicons.dev/icons?i=python",
-      },
-    ],
+    items: [],
   },
   "Web Projects": {
     title: "Web Projects",
     subtitle: "Full-Stack Applications",
     description: "React • Next.js • Node.js • TypeScript",
     gradient: "from-orange-900 to-black",
-    items: [
-      {
-        title: "E-Commerce Platform",
-        type: "Next.js, Node.js",
-        company: "Client Project",
-        duration: "2024",
-        icon: "https://skillicons.dev/icons?i=nextjs,nodejs",
-      },
-      {
-        title: "Portfolio Website",
-        type: "React, TypeScript",
-        company: "Personal Project",
-        duration: "2024",
-        icon: "https://skillicons.dev/icons?i=react,typescript",
-      },
-      {
-        title: "Admin Dashboard",
-        type: "React, Material UI",
-        company: "Workwise",
-        duration: "2023",
-        icon: "https://skillicons.dev/icons?i=react",
-      },
-      {
-        title: "Social Media App",
-        type: "MERN Stack",
-        company: "Team Project",
-        duration: "2023",
-        icon: "https://skillicons.dev/icons?i=react,nodejs",
-      },
-      {
-        title: "API Development",
-        type: "Node.js, Express",
-        company: "Backend Service",
-        duration: "2022",
-        icon: "https://skillicons.dev/icons?i=nodejs",
-      },
-    ],
+    items: [],
   },
   "Blockchain Projects": {
     title: "Blockchain Projects",
     subtitle: "Web3 & Cryptocurrency",
     description: "Solidity • Rust • Move • Smart Contracts",
     gradient: "from-yellow-900 to-black",
-    items: [
-      {
-        title: "DeFi Application",
-        type: "Solidity, React",
-        company: "Personal Project",
-        duration: "2024",
-        icon: "https://skillicons.dev/icons?i=solidity,react",
-      },
-      {
-        title: "NFT Marketplace",
-        type: "Solidity, Next.js",
-        company: "Hackathon Project",
-        duration: "2023",
-        icon: "https://skillicons.dev/icons?i=solidity,nextjs",
-      },
-      {
-        title: "Smart Contract System",
-        type: "Solidity, Hardhat",
-        company: "Client Project",
-        duration: "2023",
-        icon: "https://skillicons.dev/icons?i=solidity",
-      },
-      {
-        title: "Blockchain Explorer",
-        type: "React, Web3.js",
-        company: "Open Source",
-        duration: "2022",
-        icon: "https://skillicons.dev/icons?i=react",
-      },
-      {
-        title: "Cryptocurrency Wallet",
-        type: "React Native, Ethers.js",
-        company: "Mobile App",
-        duration: "2022",
-        icon: "https://skillicons.dev/icons?i=react",
-      },
-    ],
+    items: [],
   },
   "Skills & Tools": {
     title: "Skills & Tools",
@@ -243,49 +138,7 @@ const portfolioData = {
       },
     ],
   },
-  "Open Source": {
-    title: "Open Source",
-    subtitle: "Community Contributions",
-    description: "GitHub contributions • Open source projects • Community involvement",
-    gradient: "from-pink-900 to-black",
-    items: [
-      {
-        title: "React Component Library",
-        type: "UI Components",
-        company: "GitHub",
-        duration: "2024",
-        icon: "https://skillicons.dev/icons?i=react,typescript",
-      },
-      {
-        title: "Blockchain Development Tools",
-        type: "Developer Utilities",
-        company: "GitHub",
-        duration: "2023",
-        icon: "https://skillicons.dev/icons?i=solidity,rust",
-      },
-      {
-        title: "Data Visualization Package",
-        type: "Python Library",
-        company: "PyPI",
-        duration: "2023",
-        icon: "https://skillicons.dev/icons?i=python",
-      },
-      {
-        title: "Smart Contract Templates",
-        type: "Solidity",
-        company: "GitHub",
-        duration: "2022",
-        icon: "https://skillicons.dev/icons?i=solidity",
-      },
-      {
-        title: "Machine Learning Utilities",
-        type: "Python Package",
-        company: "GitHub",
-        duration: "2022",
-        icon: "https://skillicons.dev/icons?i=python",
-      },
-    ],
-  },
+
   Contact: {
     title: "Contact Me",
     subtitle: "Get In Touch",
@@ -369,12 +222,7 @@ const sectionColumns: Record<string, { label: string; field: string; icon?: bool
     { label: "Area", field: "company" },
     { label: "Level", field: "duration" },
   ],
-  "Open Source": [
-    { label: "Project", field: "title", icon: true },
-    { label: "Type", field: "type" },
-    { label: "Platform", field: "company" },
-    { label: "Year", field: "duration" },
-  ],
+
   "Contact": [
     { label: "Method", field: "title", icon: true },
     { label: "Value", field: "type" },
@@ -390,7 +238,61 @@ interface MainContentProps {
 }
 
 export function MainContent({ activeSection, setActiveSection, onOpenRightSidebar }: MainContentProps) {
-  const currentData = portfolioData[activeSection as keyof typeof portfolioData] || portfolioData["Education"]
+  const [githubProjects, setGitHubProjects] = useState<{
+    'AI Projects': CategorizedProject[]
+    'Web Projects': CategorizedProject[]
+    'Blockchain Projects': CategorizedProject[]
+  }>({
+    'AI Projects': [],
+    'Web Projects': [],
+    'Blockchain Projects': []
+  })
+  const [isLoading, setIsLoading] = useState(false)
+  const [hasLoaded, setHasLoaded] = useState(false)
+
+  // Fetch GitHub projects on component mount and when switching to project tabs
+  useEffect(() => {
+    const loadGitHubProjects = async () => {
+      // Only fetch if switching to a project tab or if not loaded yet
+      const isProjectTab = activeSection === 'AI Projects' || activeSection === 'Web Projects' || activeSection === 'Blockchain Projects'
+      
+      if (!isProjectTab && hasLoaded) return
+      
+      setIsLoading(true)
+      try {
+        const projects = await fetchGitHubProjects()
+        setGitHubProjects(projects)
+        setHasLoaded(true)
+      } catch (error) {
+        console.error('Failed to load GitHub projects:', error)
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    loadGitHubProjects()
+  }, [activeSection, hasLoaded])
+
+  // Merge GitHub data with hardcoded data
+  const getCurrentData = () => {
+    const baseData = portfolioData[activeSection as keyof typeof portfolioData] || portfolioData["Education"]
+    
+    // For project sections, merge with GitHub data
+    if (activeSection === 'AI Projects' || activeSection === 'Web Projects' || activeSection === 'Blockchain Projects') {
+      const githubData = githubProjects[activeSection as keyof typeof githubProjects] || []
+      
+      if (githubData.length > 0) {
+        return {
+          ...baseData,
+          items: githubData
+        }
+      }
+    }
+    
+    return baseData
+  }
+
+  const currentData = getCurrentData()
   const columns = sectionColumns[activeSection] || sectionColumns["Education"]
   const sectionNames = Object.keys(portfolioData)
 
@@ -458,60 +360,110 @@ export function MainContent({ activeSection, setActiveSection, onOpenRightSideba
             </tr>
           </thead>
           <tbody>
-            {currentData.items.map((item, index) => (
-              <tr key={index} className="hover:bg-white/10 cursor-pointer" onClick={onOpenRightSidebar}>
-                <td className="py-3">{index + 1}</td>
+            {isLoading && (activeSection === 'AI Projects' || activeSection === 'Web Projects' || activeSection === 'Blockchain Projects') ? (
+              // Show loading rows for project sections
+              Array.from({ length: 3 }).map((_, index) => (
+                <LoadingRow key={index} />
+              ))
+            ) : currentData.items.length === 0 ? (
+              <tr>
+                <td colSpan={columns.length + 1} className="py-8 text-center text-gray-400">
+                  <Loading message="No projects found" />
+                </td>
+              </tr>
+            ) : (
+              currentData.items.map((item, index) => (
+                <tr key={index} className="hover:bg-white/10 cursor-pointer" onClick={() => {
+                  // If it's a GitHub project, open the URL instead of sidebar
+                  if ('url' in item && typeof item.url === 'string' && item.url) {
+                    window.open(item.url, '_blank')
+                  } else {
+                    onOpenRightSidebar()
+                  }
+                }}>
+                  <td className="py-3">{index + 1}</td>
                   {columns.map((col, colIdx) => (
                     <td className="py-3" key={col.field}>
                       {col.icon ? (
-                  <div className="flex items-center">
-                    <Image
-                      src={item.icon || "/placeholder.svg?height=40&width=40"}
-                      width={40}
-                      height={40}
-                      alt={`${item.title} icon`}
-                      className={`mr-3 rounded ${item.title === "GitHub" ? "filter invert" : ""}`}
-                    />
-                          <span className="text-white text-lg font-medium">{(item as any)[col.field]}</span>
-                    </div>
+                        <div className="flex items-center">
+                          <Image
+                            src={item.icon || "/placeholder.svg?height=40&width=40"}
+                            width={40}
+                            height={40}
+                            alt={`${item.title} icon`}
+                            className={`mr-3 rounded ${item.title === "GitHub" ? "filter invert" : ""}`}
+                          />
+                          <div>
+                            <span className="text-white text-lg font-medium">{(item as any)[col.field]}</span>
+                            {'stars' in item && typeof item.stars === 'number' && item.stars > 0 && (
+                              <div className="text-xs text-gray-400 mt-1">
+                                ⭐ {item.stars} • 🍴 {(item as CategorizedProject).forks}
+                              </div>
+                            )}
+                          </div>
+                        </div>
                       ) : (
                         <span className="text-lg">{(item as any)[col.field]}</span>
                       )}
-                </td>
+                    </td>
                   ))}
-              </tr>
-            ))}
+                </tr>
+              ))
+            )}
           </tbody>
         </table>
       </div>
 
       {/* Card layout for mobile */}
       <div className="md:hidden space-y-4">
-        {currentData.items.map((item, index) => (
-          <div key={index} className="bg-white/5 p-4 rounded-lg hover:bg-white/10 cursor-pointer" onClick={onOpenRightSidebar}>
-            <div className="flex items-center mb-2">
+        {isLoading && (activeSection === 'AI Projects' || activeSection === 'Web Projects' || activeSection === 'Blockchain Projects') ? (
+          // Show loading cards for project sections
+          Array.from({ length: 3 }).map((_, index) => (
+            <LoadingCard key={index} />
+          ))
+        ) : currentData.items.length === 0 ? (
+          <div className="text-center py-8 text-gray-400">
+            <Loading message="No projects found" />
+          </div>
+        ) : (
+          currentData.items.map((item, index) => (
+            <div key={index} className="bg-white/5 p-4 rounded-lg hover:bg-white/10 cursor-pointer" onClick={() => {
+              // If it's a GitHub project, open the URL instead of sidebar
+              if ('url' in item && typeof item.url === 'string' && item.url) {
+                window.open(item.url, '_blank')
+              } else {
+                onOpenRightSidebar()
+              }
+            }}>
+              <div className="flex items-center mb-2">
                 <span className="text-base text-gray-400 mr-2">{index + 1}</span>
                 {columns[0].icon && (
-              <Image
-                src={item.icon || "/placeholder.svg?height=40&width=40"}
-                width={40}
-                height={40}
-                alt={`${item.title} icon`}
-                className={`mr-3 rounded ${item.title === "GitHub" ? "filter invert" : ""}`}
-              />
+                  <Image
+                    src={item.icon || "/placeholder.svg?height=40&width=40"}
+                    width={40}
+                    height={40}
+                    alt={`${item.title} icon`}
+                    className={`mr-3 rounded ${item.title === "GitHub" ? "filter invert" : ""}`}
+                  />
                 )}
-              <div>
+                <div>
                   <p className="text-white font-medium text-lg">{(item as any)[columns[0].field]}</p>
+                  {'stars' in item && typeof item.stars === 'number' && item.stars > 0 && (
+                    <div className="text-xs text-gray-400 mt-1">
+                      ⭐ {item.stars} • 🍴 {(item as CategorizedProject).forks}
+                    </div>
+                  )}
                 </div>
               </div>
               {columns.slice(1).map((col) => (
                 <div key={col.field} className="ml-8 pl-3 text-base text-gray-300">
                   <span className="font-semibold">{col.label}: </span>{(item as any)[col.field]}
-            </div>
+                </div>
               ))}
             </div>
-          ))}
-          </div>
+          ))
+        )}
+      </div>
       </div>
     </ScrollArea>
   )

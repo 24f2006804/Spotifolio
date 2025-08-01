@@ -22,7 +22,6 @@ const portfolioSections = [
   { name: "Web Projects", icon: FaGlobe, gradient: "from-orange-500 to-orange-700" },
   { name: "Blockchain Projects", icon: FaEthereum, gradient: "from-yellow-500 to-yellow-700" },
   { name: "Skills & Tools", icon: FaTools, gradient: "from-red-500 to-red-700" },
-  { name: "Open Source", icon: FaGithub, gradient: "from-pink-500 to-pink-700" },
   { name: "Contact", icon: FaCode, gradient: "from-teal-500 to-teal-700" },
 ]
 
