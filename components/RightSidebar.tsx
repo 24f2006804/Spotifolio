@@ -25,8 +25,9 @@ export function RightSidebar({ isOpen, onClose, setActiveSection, width, setWidt
     tagline: "Building meaningful things with code.",
     backgroundImage: "https://github.com/agnij-dutta/agnij-dutta/blob/main/background-mic.jpeg?raw=true",
     avatar: "https://avatars.githubusercontent.com/u/126397667?v=4",
-    shortBio: "In the realm of technologies and innovation, where code weaves enchanting solutions, there exists a young developer named Agnij Dutta...",
-    fullBio: `Agnij Dutta is a passionate full stack and blockchain developer with a love for building meaningful products. With a background in Data Science from IIT Madras, Agnij has worked on a wide range of projects from AI to Web3, always focusing on human-centered design and impactful solutions. He believes in continuous learning, open source, and the power of technology to connect people.\n\nAgnij's journey includes major contributions to open source, leadership in hackathons, and a drive to make technology accessible and ethical. When not coding, he enjoys music, reading, and exploring new ideas.`,
+    shortBio: "Hi, I'm Agnij, a passionate software engineer currently pursuing...",
+    fullBio: `Hi, I'm Agnij, a passionate software engineer currently pursuing my Bachelor's in Data Science at IIT Madras. I love building at the intersection of AI, Web3, and software engineering—bringing together smart systems, scalable backends, and intuitive frontends. Whether it's crafting seamless UIs with React and Next.js, developing intelligent solutions with machine learning and NLP, or building smart contracts and decentralized apps on Ethereum and Solana, I'm always exploring new ways to turn ideas into impactful products. Beyond code, I’m a part-time poet who believes that creativity and logic can—and should—coexist. I'm constantly learning, deeply curious, and always open to opportunities where I can grow, collaborate, and build something meaningful.
+`,
     education: {
       title: "BS Data Science and Applications",
       institute: "Indian Institute of Technology, Madras",

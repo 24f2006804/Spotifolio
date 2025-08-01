@@ -151,6 +151,7 @@ const portfolioData = {
         company: "Primary Contact",
         duration: "24/7",
         icon: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/google/google-original.svg",
+        url: "mailto:agnijdutta413@gmail.com",
       },
       {
         title: "LinkedIn",
@@ -158,6 +159,7 @@ const portfolioData = {
         company: "Professional Network",
         duration: "Active",
         icon: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/linkedin/linkedin-original.svg",
+        url: "https://linkedin.com/in/agnij-dutta",
       },
       {
         title: "GitHub",
@@ -165,6 +167,7 @@ const portfolioData = {
         company: "Code Portfolio",
         duration: "Active",
         icon: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/github/github-original-wordmark.svg",
+        url: "https://github.com/agnij-dutta",
       },
       {
         title: "X",
@@ -172,6 +175,7 @@ const portfolioData = {
         company: "Tech Discussions",
         duration: "Active",
         icon: "https://img.icons8.com/fluency/48/ffffff/twitter.png",
+        url: "https://x.com/0xholmesdev",
       },
       {
         title: "Location",
@@ -373,7 +377,7 @@ export function MainContent({ activeSection, setActiveSection, onOpenRightSideba
               </tr>
             ) : (
               currentData.items.map((item, index) => (
-                <tr key={index} className="hover:bg-white/10 cursor-pointer" onClick={() => {
+                <tr key={index} className={`hover:bg-white/10 cursor-pointer ${('url' in item && item.url) ? 'hover:bg-blue-500/20' : ''}`} onClick={() => {
                   // If it's a GitHub project, open the URL instead of sidebar
                   if ('url' in item && typeof item.url === 'string' && item.url) {
                     window.open(item.url, '_blank')
@@ -427,7 +431,7 @@ export function MainContent({ activeSection, setActiveSection, onOpenRightSideba
           </div>
         ) : (
           currentData.items.map((item, index) => (
-            <div key={index} className="bg-white/5 p-4 rounded-lg hover:bg-white/10 cursor-pointer" onClick={() => {
+            <div key={index} className={`bg-white/5 p-4 rounded-lg hover:bg-white/10 cursor-pointer ${('url' in item && item.url) ? 'hover:bg-blue-500/20' : ''}`} onClick={() => {
               // If it's a GitHub project, open the URL instead of sidebar
               if ('url' in item && typeof item.url === 'string' && item.url) {
                 window.open(item.url, '_blank')

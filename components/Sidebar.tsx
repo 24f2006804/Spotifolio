@@ -46,7 +46,6 @@ export function Sidebar({ activeSection, setActiveSection, width, setWidth }: Si
 
   const navSections = [
     { name: "Home", icon: Home },
-    { name: "Search", icon: Search },
     { name: "Your Library", icon: Library },
   ]
   const actionSections = [
@@ -144,9 +143,12 @@ export function Sidebar({ activeSection, setActiveSection, width, setWidth }: Si
                       onClick={() => {
                         if (isPortfolio) {
                           setActiveSection(item.name)
-                        if (mobileMenuOpen) setMobileMenuOpen(false)
+                          if (mobileMenuOpen) setMobileMenuOpen(false)
                         } else if (isDownload) {
                           generateResume()
+                        } else if (item.name === "Home") {
+                          setActiveSection("Education")
+                          if (mobileMenuOpen) setMobileMenuOpen(false)
                         }
                       }}
                       className={
