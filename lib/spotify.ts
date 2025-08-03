@@ -60,7 +60,13 @@ const SPOTIFY_SCOPES = [
 ].join(' ')
 
 // Your access token from environment variable
-const HARDCODED_ACCESS_TOKEN = process.env.SPOTIFY_ACCESS_TOKEN || ''
+const HARDCODED_ACCESS_TOKEN = process.env.NEXT_PUBLIC_SPOTIFY_ACCESS_TOKEN || ''
+
+// Debug: Log environment variables (only in development)
+if (typeof window !== 'undefined' && process.env.NODE_ENV === 'development') {
+  console.log('Spotify Client ID:', process.env.NEXT_PUBLIC_SPOTIFY_CLIENT_ID)
+  console.log('Spotify Access Token available:', !!process.env.NEXT_PUBLIC_SPOTIFY_ACCESS_TOKEN)
+}
 
 // Token management - Always use hardcoded token
 let accessToken: string | null = HARDCODED_ACCESS_TOKEN
@@ -92,6 +98,10 @@ async function refreshAccessToken(): Promise<boolean> {
 // Get valid access token
 async function getValidToken(): Promise<string | null> {
   // Always return the hardcoded token
+  if (!HARDCODED_ACCESS_TOKEN) {
+    console.error('No Spotify access token found in environment variables')
+    return null
+  }
   return HARDCODED_ACCESS_TOKEN
 }
 
