@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Get Spotify Tokens</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #121212;
+            color: white;
+        }
+        .container {
+            background: #282828;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        button {
+            background: #1DB954;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px 5px;
+        }
+        button:hover {
+            background: #1ed760;
+        }
+        .token-display {
+            background: #181818;
+            padding: 15px;
+            border-radius: 4px;
+            margin: 10px 0;
+            word-break: break-all;
+            font-family: monospace;
+            font-size: 12px;
+        }
+        .step {
+            margin: 20px 0;
+            padding: 15px;
+            border-left: 4px solid #1DB954;
+            background: #181818;
+        }
+    </style>
+</head>
+<body>
+    <h1>🎵 Spotify Token Generator</h1>
+    
+    <div class="container">
+        <h2>Step 1: Get Authorization Code</h2>
+        <p>Click the button below to authorize this app with your Spotify account:</p>
+        <button onclick="authorize()">Authorize with Spotify</button>
+        
+        <div class="step">
+            <h3>Current URL Parameters:</h3>
+            <div id="urlParams" class="token-display">No parameters found</div>
+        </div>
+    </div>
+
+    <div class="container">
+        <h2>Step 2: Exchange Code for Tokens</h2>
+        <p>After authorization, click this button to exchange the code for tokens:</p>
+        <button onclick="exchangeCode()" id="exchangeBtn" disabled>Exchange Code for Tokens</button>
+        
+        <div class="step">
+            <h3>Tokens:</h3>
+            <div id="tokens" class="token-display">No tokens yet</div>
+        </div>
+    </div>
+
+    <div class="container">
+        <h2>Step 3: Copy to Environment</h2>
+        <p>Copy these values to your .env.local file:</p>
+        <div class="step">
+            <h4>Access Token:</h4>
+            <div id="accessTokenEnv" class="token-display">Not available yet</div>
+            
+            <h4>Refresh Token:</h4>
+            <div id="refreshTokenEnv" class="token-display">Not available yet</div>
+        </div>
+    </div>
+
+    <script>
+        const CLIENT_ID = 'b98e600829484812ac7734a5395fa402';
+        const REDIRECT_URI = 'https://agnij.vercel.app/get-spotify-tokens.html';
+        const SCOPES = [
+            'user-read-playback-state',
+            'user-modify-playback-state',
+            'user-read-currently-playing',
+            'user-read-recently-played',
+            'user-read-playback-position',
+            'user-read-email',
+            'user-read-private'
+        ].join(' ');
+
+        let authorizationCode = null;
+
+        // Check for authorization code in URL
+        function checkUrlParams() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const code = urlParams.get('code');
+            const error = urlParams.get('error');
+            
+            const paramsDiv = document.getElementById('urlParams');
+            if (code) {
+                authorizationCode = code;
+                paramsDiv.textContent = `Authorization Code: ${code}`;
+                document.getElementById('exchangeBtn').disabled = false;
+            } else if (error) {
+                paramsDiv.textContent = `Error: ${error}`;
+            } else {
+                paramsDiv.textContent = 'No authorization code found in URL';
+            }
+        }
+
+        // Authorize with Spotify
+        function authorize() {
+            const state = Math.random().toString(36).substring(7);
+            const authUrl = `https://accounts.spotify.com/authorize?${new URLSearchParams({
+                response_type: 'code',
+                client_id: CLIENT_ID,
+                scope: SCOPES,
+                redirect_uri: REDIRECT_URI,
+                state: state
+            })}`;
+            
+            window.location.href = authUrl;
+        }
+
+        // Exchange code for tokens
+        async function exchangeCode() {
+            if (!authorizationCode) {
+                alert('No authorization code available');
+                return;
+            }
+
+            try {
+                const response = await fetch('https://accounts.spotify.com/api/token', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                        'Authorization': 'Basic ' + btoa(CLIENT_ID + ':' + '4ea25201fd6744c1aa5dfe78626c6394')
+                    },
+                    body: new URLSearchParams({
+                        grant_type: 'authorization_code',
+                        code: authorizationCode,
+                        redirect_uri: REDIRECT_URI
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`Token exchange failed: ${response.status}`);
+                }
+
+                const data = await response.json();
+                
+                // Display tokens
+                document.getElementById('tokens').textContent = JSON.stringify(data, null, 2);
+                
+                // Display environment variable format
+                document.getElementById('accessTokenEnv').textContent = `NEXT_PUBLIC_SPOTIFY_ACCESS_TOKEN=${data.access_token}`;
+                document.getElementById('refreshTokenEnv').textContent = `SPOTIFY_REFRESH_TOKEN=${data.refresh_token}`;
+                
+                console.log('Tokens received:', data);
+                
+            } catch (error) {
+                console.error('Error exchanging code:', error);
+                document.getElementById('tokens').textContent = `Error: ${error.message}`;
+            }
+        }
+
+        // Check URL parameters on page load
+        checkUrlParams();
+    </script>
+</body>
+</html> 
