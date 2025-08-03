@@ -48,7 +48,6 @@ export interface SpotifyDevice {
 // Spotify API configuration - Read from environment variables
 const SPOTIFY_CLIENT_ID = process.env.NEXT_PUBLIC_SPOTIFY_CLIENT_ID || ''
 const SPOTIFY_CLIENT_SECRET = process.env.SPOTIFY_CLIENT_SECRET || ''
-const SPOTIFY_REDIRECT_URI = 'http://localhost:3000/api/auth/spotify/callback'
 const SPOTIFY_SCOPES = [
   'user-read-playback-state',
   'user-modify-playback-state',
