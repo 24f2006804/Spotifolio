@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, Suspense } from "react"
 import { Sidebar } from "../components/Sidebar"
 import { MainContent } from "../components/MainContent"
 import { PlayerControls } from "../components/PlayerControls"
@@ -10,16 +10,10 @@ import { useSearchParams } from "next/navigation"
 
 const DEFAULT_SECTION = "Education"
 
-export default function Home() {
-  const [history, setHistory] = useState([DEFAULT_SECTION])
-  const [historyIndex, setHistoryIndex] = useState(0)
-  const [activeSection, setActiveSectionState] = useState(DEFAULT_SECTION)
-  const [isRightSidebarOpen, setIsRightSidebarOpen] = useState(true)
-  const [leftSidebarWidth, setLeftSidebarWidth] = useState(240)
-  const [rightSidebarWidth, setRightSidebarWidth] = useState(384)
+// Component that handles Spotify token processing
+function SpotifyTokenHandler() {
   const searchParams = useSearchParams()
 
-  // Handle Spotify authentication tokens
   useEffect(() => {
     const accessToken = searchParams.get('access_token')
     const refreshToken = searchParams.get('refresh_token')
@@ -35,6 +29,17 @@ export default function Home() {
       window.history.replaceState({}, document.title, window.location.pathname)
     }
   }, [searchParams])
+
+  return null
+}
+
+export default function Home() {
+  const [history, setHistory] = useState([DEFAULT_SECTION])
+  const [historyIndex, setHistoryIndex] = useState(0)
+  const [activeSection, setActiveSectionState] = useState(DEFAULT_SECTION)
+  const [isRightSidebarOpen, setIsRightSidebarOpen] = useState(true)
+  const [leftSidebarWidth, setLeftSidebarWidth] = useState(240)
+  const [rightSidebarWidth, setRightSidebarWidth] = useState(384)
 
   // Custom setActiveSection that manages history
   const setActiveSection = (section: string) => {
@@ -71,6 +76,9 @@ export default function Home() {
 
   return (
     <div className="flex flex-col h-screen bg-black">
+      <Suspense fallback={null}>
+        <SpotifyTokenHandler />
+      </Suspense>
       <TopBar onBack={goBack} onForward={goForward} canGoBack={historyIndex > 0} canGoForward={historyIndex < history.length - 1} setActiveSection={setActiveSection} />
       <div className="flex flex-1 overflow-hidden relative gap-2 px-2">
         <Sidebar 
