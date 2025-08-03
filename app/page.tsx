@@ -1,11 +1,12 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Sidebar } from "../components/Sidebar"
 import { MainContent } from "../components/MainContent"
 import { PlayerControls } from "../components/PlayerControls"
 import { RightSidebar } from "../components/RightSidebar"
 import { TopBar } from "../components/TopBar"
+import { useSearchParams } from "next/navigation"
 
 const DEFAULT_SECTION = "Education"
 
@@ -16,6 +17,24 @@ export default function Home() {
   const [isRightSidebarOpen, setIsRightSidebarOpen] = useState(true)
   const [leftSidebarWidth, setLeftSidebarWidth] = useState(240)
   const [rightSidebarWidth, setRightSidebarWidth] = useState(384)
+  const searchParams = useSearchParams()
+
+  // Handle Spotify authentication tokens
+  useEffect(() => {
+    const accessToken = searchParams.get('access_token')
+    const refreshToken = searchParams.get('refresh_token')
+    const expiresIn = searchParams.get('expires_in')
+
+    if (accessToken && refreshToken && expiresIn) {
+      // Save tokens to localStorage
+      localStorage.setItem('spotify_access_token', accessToken)
+      localStorage.setItem('spotify_refresh_token', refreshToken)
+      localStorage.setItem('spotify_token_expiry', (Date.now() + parseInt(expiresIn) * 1000).toString())
+      
+      // Clear URL parameters
+      window.history.replaceState({}, document.title, window.location.pathname)
+    }
+  }, [searchParams])
 
   // Custom setActiveSection that manages history
   const setActiveSection = (section: string) => {

@@ -1,9 +1,10 @@
 "use client"
 
-import { ChevronLeft, ChevronRight, Search } from "lucide-react"
+import { ChevronLeft, ChevronRight, Search, Github, Code, GitBranch } from "lucide-react"
 import { useState, useRef, useEffect } from "react"
 import Fuse from "fuse.js"
 import { portfolioData as portfolioDataRaw } from "../components/MainContent"
+import { searchGitHub, GitHubSearchResult } from "../lib/github-search"
 
 // Helper to flatten portfolioData
 function flattenPortfolioData(data: any) {
@@ -36,6 +37,12 @@ export function TopBar({ onBack, onForward, canGoBack = true, canGoForward = tru
   const [open, setOpen] = useState(false)
   const [recent, setRecent] = useState<string[]>([])
   const [results, setResults] = useState<any[]>([])
+  const [githubResults, setGitHubResults] = useState<{
+    repositories: GitHubSearchResult[]
+    code: GitHubSearchResult[]
+    issues: GitHubSearchResult[]
+  }>({ repositories: [], code: [], issues: [] })
+  const [isLoadingGitHub, setIsLoadingGitHub] = useState(false)
   const [highlight, setHighlight] = useState(0)
   const inputRef = useRef<HTMLInputElement>(null)
   const dropdownRef = useRef<HTMLDivElement>(null)
@@ -63,12 +70,33 @@ export function TopBar({ onBack, onForward, canGoBack = true, canGoForward = tru
   useEffect(() => {
     if (search.trim() === "") {
       setResults([])
+      setGitHubResults({ repositories: [], code: [], issues: [] })
       setHighlight(0)
       return
     }
+    
+    // Portfolio search
     const res = fuse.search(search).map((r) => r.item).slice(0, 5)
     setResults(res)
+    
+    // GitHub search with debouncing
+    const timeoutId = setTimeout(async () => {
+      if (search.trim().length >= 2) {
+        setIsLoadingGitHub(true)
+        try {
+          const githubRes = await searchGitHub(search)
+          setGitHubResults(githubRes)
+        } catch (error) {
+          console.error('GitHub search error:', error)
+        } finally {
+          setIsLoadingGitHub(false)
+        }
+      }
+    }, 500)
+    
     setHighlight(0)
+    
+    return () => clearTimeout(timeoutId)
   }, [search])
 
   // Handle outside click
@@ -113,6 +141,12 @@ export function TopBar({ onBack, onForward, canGoBack = true, canGoForward = tru
     if (setActiveSection && item.section) {
       setActiveSection(item.section)
     }
+    setOpen(false)
+  }
+
+  function handleGitHubSelect(item: GitHubSearchResult) {
+    saveRecent(search)
+    window.open(item.url, '_blank')
     setOpen(false)
   }
 
@@ -190,20 +224,101 @@ export function TopBar({ onBack, onForward, canGoBack = true, canGoForward = tru
                 </>
               ) : (
                 <>
-                  {results.length === 0 && <div className="px-4 py-2 text-gray-500">No results found</div>}
-                  {results.map((item, idx) => (
-                    <div
-                      key={item.title + item.company + item.section}
-                      className={`flex items-center gap-3 px-4 py-2 cursor-pointer hover:bg-[#232323] ${highlight === idx ? "bg-[#232323]" : ""}`}
-                      onMouseDown={() => handleSelect(item)}
-                    >
-                      <img src={item.icon} alt="icon" className="w-6 h-6 rounded" />
-                      <div>
-                        <div className="font-medium text-white text-sm">{item.title}</div>
-                        <div className="text-xs text-gray-400">{item.company} &middot; {item.sectionTitle}</div>
-                      </div>
-                    </div>
-                  ))}
+                  {/* Portfolio Results */}
+                  {results.length > 0 && (
+                    <>
+                      <div className="px-4 pt-3 pb-2 text-sm font-bold text-white">Portfolio</div>
+                      <div className="border-b border-[#232323] mx-4 mb-2"></div>
+                      {results.map((item, idx) => (
+                        <div
+                          key={item.title + item.company + item.section}
+                          className={`flex items-center gap-3 px-4 py-2 cursor-pointer hover:bg-[#232323] ${highlight === idx ? "bg-[#232323]" : ""}`}
+                          onMouseDown={() => handleSelect(item)}
+                        >
+                          <img src={item.icon} alt="icon" className="w-6 h-6 rounded" />
+                          <div>
+                            <div className="font-medium text-white text-sm">{item.title}</div>
+                            <div className="text-xs text-gray-400">{item.company} &middot; {item.sectionTitle}</div>
+                          </div>
+                        </div>
+                      ))}
+                    </>
+                  )}
+
+                  {/* GitHub Results */}
+                  {isLoadingGitHub && (
+                    <>
+                      <div className="px-4 pt-3 pb-2 text-sm font-bold text-white">My GitHub</div>
+                      <div className="border-b border-[#232323] mx-4 mb-2"></div>
+                      <div className="px-4 py-2 text-gray-400">Searching my GitHub...</div>
+                    </>
+                  )}
+
+                  {!isLoadingGitHub && (githubResults.repositories.length > 0 || githubResults.code.length > 0 || githubResults.issues.length > 0) && (
+                    <>
+                      <div className="px-4 pt-3 pb-2 text-sm font-bold text-white">My GitHub</div>
+                      <div className="border-b border-[#232323] mx-4 mb-2"></div>
+                      
+                      {/* Repositories */}
+                      {githubResults.repositories.map((item, idx) => (
+                        <div
+                          key={`repo-${item.url}`}
+                          className={`flex items-center gap-3 px-4 py-2 cursor-pointer hover:bg-[#232323]`}
+                          onMouseDown={() => handleGitHubSelect(item)}
+                        >
+                          <Github size={16} className="text-gray-400" />
+                          <div className="flex-1">
+                            <div className="font-medium text-white text-sm">{item.title}</div>
+                            <div className="text-xs text-gray-400">
+                              {item.owner}/{item.repository} {item.stars && `• ${item.stars}⭐`}
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+
+                      {/* Code */}
+                      {githubResults.code.map((item, idx) => (
+                        <div
+                          key={`code-${item.url}`}
+                          className={`flex items-center gap-3 px-4 py-2 cursor-pointer hover:bg-[#232323]`}
+                          onMouseDown={() => handleGitHubSelect(item)}
+                        >
+                          <Code size={16} className="text-gray-400" />
+                          <div className="flex-1">
+                            <div className="font-medium text-white text-sm">{item.title}</div>
+                            <div className="text-xs text-gray-400">
+                              {item.repository} {item.language && `• ${item.language}`}
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+
+                      {/* Issues */}
+                      {githubResults.issues.map((item, idx) => (
+                        <div
+                          key={`issue-${item.url}`}
+                          className={`flex items-center gap-3 px-4 py-2 cursor-pointer hover:bg-[#232323]`}
+                          onMouseDown={() => handleGitHubSelect(item)}
+                        >
+                          <GitBranch size={16} className="text-gray-400" />
+                          <div className="flex-1">
+                            <div className="font-medium text-white text-sm">{item.title}</div>
+                            <div className="text-xs text-gray-400">
+                              {item.repository} • Issue
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </>
+                  )}
+
+                  {/* No results */}
+                  {results.length === 0 && !isLoadingGitHub && 
+                   githubResults.repositories.length === 0 && 
+                   githubResults.code.length === 0 && 
+                   githubResults.issues.length === 0 && (
+                    <div className="px-4 py-2 text-gray-500">No results found</div>
+                  )}
                 </>
               )}
             </div>
