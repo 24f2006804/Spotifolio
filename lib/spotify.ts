@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react'
-import { getValidAccessToken, initializeWithTokens, clearTokens as clearStoredTokens } from './spotify-refresh'
 
 // Spotify Web API integration
 export interface SpotifyTrack {
@@ -59,19 +58,50 @@ const SPOTIFY_SCOPES = [
   'user-read-private'
 ].join(' ')
 
-// Initialize with environment variables if available
-if (typeof window !== 'undefined') {
-  const envAccessToken = process.env.NEXT_PUBLIC_SPOTIFY_ACCESS_TOKEN
-  const envRefreshToken = process.env.SPOTIFY_REFRESH_TOKEN
-  
-  if (envAccessToken && envRefreshToken) {
-    initializeWithTokens(envAccessToken, envRefreshToken, 3600)
-  }
+// Your access token from environment variable
+const HARDCODED_ACCESS_TOKEN = process.env.NEXT_PUBLIC_SPOTIFY_ACCESS_TOKEN || ''
+
+// Debug: Log environment variables (only in development)
+if (typeof window !== 'undefined' && process.env.NODE_ENV === 'development') {
+  console.log('Spotify Client ID:', process.env.NEXT_PUBLIC_SPOTIFY_CLIENT_ID)
+  console.log('Spotify Access Token available:', !!process.env.NEXT_PUBLIC_SPOTIFY_ACCESS_TOKEN)
 }
 
-// Get valid access token using the refresh system
+// Token management - Always use hardcoded token
+let accessToken: string | null = HARDCODED_ACCESS_TOKEN
+let refreshToken: string | null = null
+let tokenExpiry: number = Date.now() + (3600 * 1000) // 1 hour from now
+
+// Save tokens to localStorage (not used with hardcoded token)
+function saveTokens(token: string, refresh: string, expiry: number) {
+  // Do nothing - we always use the hardcoded token
+}
+
+// Clear tokens (not used with hardcoded token)
+function clearTokens() {
+  // Do nothing - we always use the hardcoded token
+}
+
+// Check if token is expired
+function isTokenExpired(): boolean {
+  return Date.now() >= tokenExpiry
+}
+
+// Refresh access token (not used with hardcoded token)
+async function refreshAccessToken(): Promise<boolean> {
+  // For now, just return true since we're using a hardcoded token
+  // In production, you'd want to implement proper token refresh
+  return true
+}
+
+// Get valid access token
 async function getValidToken(): Promise<string | null> {
-  return await getValidAccessToken()
+  // Always return the hardcoded token
+  if (!HARDCODED_ACCESS_TOKEN) {
+    console.error('No Spotify access token found in environment variables')
+    return null
+  }
+  return HARDCODED_ACCESS_TOKEN
 }
 
 // Spotify API base URL
@@ -95,9 +125,10 @@ async function spotifyApiRequest(endpoint: string, options: RequestInit = {}): P
   
   if (response.status === 401) {
     // Token expired, try to refresh
-    const newToken = await getValidToken()
-    if (newToken) {
+    const refreshed = await refreshAccessToken()
+    if (refreshed) {
       // Retry the request
+      const newToken = await getValidToken()
       const retryResponse = await fetch(`${SPOTIFY_API_BASE}${endpoint}`, {
         ...options,
         headers: {
@@ -233,7 +264,7 @@ export function isAuthenticated(): boolean {
 }
 
 export function logout(): void {
-  clearStoredTokens()
+  // Not used since we have a hardcoded token
 }
 
 // Hook for real-time playback updates
