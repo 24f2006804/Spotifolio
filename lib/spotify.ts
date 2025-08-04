@@ -50,7 +50,7 @@ const SPOTIFY_CLIENT_ID = process.env.NEXT_PUBLIC_SPOTIFY_CLIENT_ID || ''
 const SPOTIFY_CLIENT_SECRET = process.env.SPOTIFY_CLIENT_SECRET || ''
 const SPOTIFY_REDIRECT_URI = process.env.NEXT_PUBLIC_SPOTIFY_REDIRECT_URI || 'https://agnij.vercel.app/api/auth/spotify/callback'
 const HARDCODED_ACCESS_TOKEN = process.env.NEXT_PUBLIC_SPOTIFY_ACCESS_TOKEN || ''
-const HARDCODED_REFRESH_TOKEN = process.env.SPOTIFY_REFRESH_TOKEN || ''
+const HARDCODED_REFRESH_TOKEN = process.env.NEXT_PUBLIC_SPOTIFY_REFRESH_TOKEN || ''
 
 // Debug: Log configuration in development
 if (typeof window !== 'undefined' && process.env.NODE_ENV === 'development') {
