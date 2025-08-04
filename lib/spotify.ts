@@ -50,13 +50,15 @@ const SPOTIFY_CLIENT_ID = process.env.NEXT_PUBLIC_SPOTIFY_CLIENT_ID || ''
 const SPOTIFY_CLIENT_SECRET = process.env.SPOTIFY_CLIENT_SECRET || ''
 const SPOTIFY_REDIRECT_URI = process.env.NEXT_PUBLIC_SPOTIFY_REDIRECT_URI || 'https://agnij.vercel.app/api/auth/spotify/callback'
 const HARDCODED_ACCESS_TOKEN = process.env.NEXT_PUBLIC_SPOTIFY_ACCESS_TOKEN || ''
+const HARDCODED_REFRESH_TOKEN = process.env.SPOTIFY_REFRESH_TOKEN || ''
 
 // Debug: Log configuration in development
 if (typeof window !== 'undefined' && process.env.NODE_ENV === 'development') {
   console.log('Spotify Configuration:')
   console.log('Client ID:', SPOTIFY_CLIENT_ID)
   console.log('Redirect URI:', SPOTIFY_REDIRECT_URI)
-  console.log('Hardcoded Token exists:', !!HARDCODED_ACCESS_TOKEN)
+  console.log('Hardcoded Access Token exists:', !!HARDCODED_ACCESS_TOKEN)
+  console.log('Hardcoded Refresh Token exists:', !!HARDCODED_REFRESH_TOKEN)
 }
 const SPOTIFY_SCOPES = [
   'user-read-playback-state',
@@ -166,6 +168,7 @@ async function getValidToken(): Promise<string | null> {
     console.log('Environment variable check:')
     console.log('NEXT_PUBLIC_SPOTIFY_ACCESS_TOKEN exists:', !!process.env.NEXT_PUBLIC_SPOTIFY_ACCESS_TOKEN)
     console.log('HARDCODED_ACCESS_TOKEN exists:', !!HARDCODED_ACCESS_TOKEN)
+    console.log('HARDCODED_REFRESH_TOKEN exists:', !!HARDCODED_REFRESH_TOKEN)
   }
   
   // First, try to use the hardcoded token if available
@@ -203,6 +206,45 @@ async function getValidToken(): Promise<string | null> {
   return tokens.access_token
 }
 
+// New function to refresh hardcoded token
+async function refreshHardcodedToken(): Promise<string | null> {
+  if (!HARDCODED_REFRESH_TOKEN) {
+    console.log('No hardcoded refresh token available')
+    return null
+  }
+
+  try {
+    console.log('Refreshing hardcoded access token...')
+    
+    const response = await fetch('https://accounts.spotify.com/api/token', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+        'Authorization': `Basic ${btoa(`${SPOTIFY_CLIENT_ID}:${SPOTIFY_CLIENT_SECRET}`)}`,
+      },
+      body: new URLSearchParams({
+        grant_type: 'refresh_token',
+        refresh_token: HARDCODED_REFRESH_TOKEN,
+      }),
+    })
+
+    if (!response.ok) {
+      const errorData = await response.text()
+      console.error('Failed to refresh hardcoded token:', response.status, errorData)
+      return null
+    }
+
+    const data = await response.json()
+    console.log('Successfully refreshed hardcoded access token')
+    
+    // Return the new token (we can't update env vars on client side)
+    return data.access_token
+  } catch (error) {
+    console.error('Error refreshing hardcoded token:', error)
+    return null
+  }
+}
+
 // Spotify API base URL
 const SPOTIFY_API_BASE = 'https://api.spotify.com/v1'
 
@@ -232,14 +274,33 @@ async function spotifyApiRequest(endpoint: string, options: RequestInit = {}): P
   
   if (response.status === 401) {
     console.error('401 Unauthorized - Token is invalid or expired')
-    // If using hardcoded token and it's expired, try OAuth flow
+    
+    // If using hardcoded token and it's expired, try to refresh it
     if (HARDCODED_ACCESS_TOKEN && token === HARDCODED_ACCESS_TOKEN) {
-      console.log('Hardcoded token expired, trying OAuth tokens...')
+      console.log('Hardcoded token expired, trying to refresh...')
+      const newToken = await refreshHardcodedToken()
+      if (newToken) {
+        // Retry the request with new token
+        const retryResponse = await fetch(`${SPOTIFY_API_BASE}${endpoint}`, {
+          ...options,
+          headers: {
+            'Authorization': `Bearer ${newToken}`,
+            'Content-Type': 'application/json',
+            ...options.headers,
+          },
+        })
+        
+        if (retryResponse.ok) {
+          return retryResponse.json()
+        }
+      }
+      // If refresh fails, try OAuth tokens as fallback
+      console.log('Hardcoded token refresh failed, trying OAuth tokens...')
       const tokens = getStoredTokens()
       if (tokens) {
         const newTokens = await refreshAccessToken(tokens.refresh_token)
         if (newTokens) {
-          // Retry the request with new token
+          // Retry the request with OAuth token
           const retryResponse = await fetch(`${SPOTIFY_API_BASE}${endpoint}`, {
             ...options,
             headers: {
@@ -254,7 +315,6 @@ async function spotifyApiRequest(endpoint: string, options: RequestInit = {}): P
           }
         }
       }
-      // If OAuth also fails, redirect to auth
       throw new Error('Authentication failed - please re-authenticate with Spotify')
     } else {
       // For OAuth tokens, try to refresh
@@ -424,6 +484,12 @@ export async function setRepeatMode(mode: 'off' | 'track' | 'context', deviceId?
   await spotifyApiRequest(`/me/player/repeat?${params}`, {
     method: 'PUT',
   })
+}
+
+// Get recently played tracks
+export async function getRecentlyPlayed(limit: number = 20): Promise<any> {
+  const params = new URLSearchParams({ limit: limit.toString() })
+  return await spotifyApiRequest(`/me/player/recently-played?${params}`)
 }
 
 // Authentication functions
