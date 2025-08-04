@@ -47,7 +47,6 @@ export interface SpotifyDevice {
 
 // Spotify API configuration
 const SPOTIFY_CLIENT_ID = process.env.NEXT_PUBLIC_SPOTIFY_CLIENT_ID || ''
-const SPOTIFY_CLIENT_SECRET = process.env.SPOTIFY_CLIENT_SECRET || ''
 const SPOTIFY_REDIRECT_URI = process.env.NEXT_PUBLIC_SPOTIFY_REDIRECT_URI || 'https://agnij.vercel.app/api/auth/spotify/callback'
 const HARDCODED_ACCESS_TOKEN = process.env.NEXT_PUBLIC_SPOTIFY_ACCESS_TOKEN || ''
 const HARDCODED_REFRESH_TOKEN = process.env.NEXT_PUBLIC_SPOTIFY_REFRESH_TOKEN || ''
@@ -122,16 +121,15 @@ function clearTokens() {
 // Refresh access token using refresh token
 async function refreshAccessToken(refreshToken: string): Promise<SpotifyTokens | null> {
   try {
-    const response = await fetch('https://accounts.spotify.com/api/token', {
+    // Use our server-side API route to refresh the token securely
+    const response = await fetch('/api/spotify/refresh', {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
-        'Authorization': `Basic ${btoa(`${SPOTIFY_CLIENT_ID}:${SPOTIFY_CLIENT_SECRET}`)}`
+        'Content-Type': 'application/json',
       },
-      body: new URLSearchParams({
-        grant_type: 'refresh_token',
-        refresh_token: refreshToken
-      })
+      body: JSON.stringify({
+        refresh_token: refreshToken,
+      }),
     })
 
     if (!response.ok) {
@@ -216,14 +214,13 @@ async function refreshHardcodedToken(): Promise<string | null> {
   try {
     console.log('Refreshing hardcoded access token...')
     
-    const response = await fetch('https://accounts.spotify.com/api/token', {
+    // Use our server-side API route to refresh the token securely
+    const response = await fetch('/api/spotify/refresh', {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
-        'Authorization': `Basic ${btoa(`${SPOTIFY_CLIENT_ID}:${SPOTIFY_CLIENT_SECRET}`)}`,
+        'Content-Type': 'application/json',
       },
-      body: new URLSearchParams({
-        grant_type: 'refresh_token',
+      body: JSON.stringify({
         refresh_token: HARDCODED_REFRESH_TOKEN,
       }),
     })
@@ -237,7 +234,7 @@ async function refreshHardcodedToken(): Promise<string | null> {
     const data = await response.json()
     console.log('Successfully refreshed hardcoded access token')
     
-    // Return the new token (we can't update env vars on client side)
+    // Return the new token
     return data.access_token
   } catch (error) {
     console.error('Error refreshing hardcoded token:', error)
