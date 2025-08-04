@@ -28,7 +28,11 @@ export function PlayerControls({ onToggleRightSidebar, isRightSidebarOpen }: Pla
 
   const handlePlayPause = async () => {
     if (!isAuthenticated()) {
-      window.location.href = getSpotifyAuthUrl()
+      // Only redirect to auth if we don't have a hardcoded token
+      const hardcodedToken = process.env.NEXT_PUBLIC_SPOTIFY_ACCESS_TOKEN
+      if (!hardcodedToken) {
+        window.location.href = getSpotifyAuthUrl()
+      }
       return
     }
 
@@ -195,9 +199,9 @@ export function PlayerControls({ onToggleRightSidebar, isRightSidebarOpen }: Pla
         </button>
         {isAuthenticated() ? (
           <button
-            onClick={logout}
+            onClick={() => window.open('https://open.spotify.com', '_blank')}
             className="p-2 rounded hover:bg-[#1F1F1F] transition-colors text-gray-400 hover:text-white"
-            title="Disconnect Spotify"
+            title="Open Spotify"
           >
             <Music size={18} />
           </button>

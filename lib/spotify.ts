@@ -48,7 +48,8 @@ export interface SpotifyDevice {
 // Spotify API configuration
 const SPOTIFY_CLIENT_ID = process.env.NEXT_PUBLIC_SPOTIFY_CLIENT_ID || ''
 const SPOTIFY_CLIENT_SECRET = process.env.SPOTIFY_CLIENT_SECRET || ''
-const SPOTIFY_REDIRECT_URI = process.env.NEXT_PUBLIC_SPOTIFY_REDIRECT_URI || 'http://192.168.0.104:3000/api/auth/spotify/callback'
+const SPOTIFY_REDIRECT_URI = process.env.NEXT_PUBLIC_SPOTIFY_REDIRECT_URI || 'https://agnij.vercel.app/api/auth/spotify/callback'
+const HARDCODED_ACCESS_TOKEN = process.env.NEXT_PUBLIC_SPOTIFY_ACCESS_TOKEN || ''
 const SPOTIFY_SCOPES = [
   'user-read-playback-state',
   'user-modify-playback-state',
@@ -151,6 +152,12 @@ async function refreshAccessToken(refreshToken: string): Promise<SpotifyTokens |
 
 // Get valid access token (with automatic refresh)
 async function getValidToken(): Promise<string | null> {
+  // First, try to use the hardcoded token if available
+  if (HARDCODED_ACCESS_TOKEN) {
+    return HARDCODED_ACCESS_TOKEN
+  }
+  
+  // Fall back to OAuth tokens if no hardcoded token
   const tokens = getStoredTokens()
   
   if (!tokens) {
@@ -188,27 +195,53 @@ async function spotifyApiRequest(endpoint: string, options: RequestInit = {}): P
   })
   
   if (response.status === 401) {
-    // Token expired, try to refresh
-    const tokens = getStoredTokens()
-    if (tokens) {
-      const newTokens = await refreshAccessToken(tokens.refresh_token)
-      if (newTokens) {
-        // Retry the request with new token
-        const retryResponse = await fetch(`${SPOTIFY_API_BASE}${endpoint}`, {
-          ...options,
-          headers: {
-            'Authorization': `Bearer ${newTokens.access_token}`,
-            'Content-Type': 'application/json',
-            ...options.headers,
-          },
-        })
-        
-        if (retryResponse.ok) {
-          return retryResponse.json()
+    // If using hardcoded token and it's expired, try OAuth flow
+    if (HARDCODED_ACCESS_TOKEN && token === HARDCODED_ACCESS_TOKEN) {
+      console.log('Hardcoded token expired, trying OAuth tokens...')
+      const tokens = getStoredTokens()
+      if (tokens) {
+        const newTokens = await refreshAccessToken(tokens.refresh_token)
+        if (newTokens) {
+          // Retry the request with new token
+          const retryResponse = await fetch(`${SPOTIFY_API_BASE}${endpoint}`, {
+            ...options,
+            headers: {
+              'Authorization': `Bearer ${newTokens.access_token}`,
+              'Content-Type': 'application/json',
+              ...options.headers,
+            },
+          })
+          
+          if (retryResponse.ok) {
+            return retryResponse.json()
+          }
         }
       }
+      // If OAuth also fails, redirect to auth
+      throw new Error('Authentication failed - please re-authenticate with Spotify')
+    } else {
+      // For OAuth tokens, try to refresh
+      const tokens = getStoredTokens()
+      if (tokens) {
+        const newTokens = await refreshAccessToken(tokens.refresh_token)
+        if (newTokens) {
+          // Retry the request with new token
+          const retryResponse = await fetch(`${SPOTIFY_API_BASE}${endpoint}`, {
+            ...options,
+            headers: {
+              'Authorization': `Bearer ${newTokens.access_token}`,
+              'Content-Type': 'application/json',
+              ...options.headers,
+            },
+          })
+          
+          if (retryResponse.ok) {
+            return retryResponse.json()
+          }
+        }
+      }
+      throw new Error('Authentication failed - please re-authenticate with Spotify')
     }
-    throw new Error('Authentication failed - please re-authenticate with Spotify')
   }
   
   if (!response.ok) {
@@ -334,6 +367,12 @@ export function getSpotifyAuthUrl(): string {
 }
 
 export function isAuthenticated(): boolean {
+  // Check if we have a hardcoded token first
+  if (HARDCODED_ACCESS_TOKEN) {
+    return true
+  }
+  
+  // Fall back to checking OAuth tokens
   const tokens = getStoredTokens()
   return tokens !== null
 }
