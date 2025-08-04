@@ -57,7 +57,8 @@ const SPOTIFY_SCOPES = [
   'user-read-recently-played',
   'user-read-playback-position',
   'user-read-email',
-  'user-read-private'
+  'user-read-private',
+  'streaming'
 ].join(' ')
 
 // Token management
@@ -290,9 +291,23 @@ export async function testTokenValidity(): Promise<boolean> {
   try {
     const data = await spotifyApiRequest('/me')
     console.log('Token is valid, user profile:', data.display_name)
+    console.log('User product:', data.product) // free/premium
     return true
   } catch (error) {
     console.error('Token validation failed:', error)
+    return false
+  }
+}
+
+// Test if token has playback scopes
+export async function testPlaybackScopes(): Promise<boolean> {
+  try {
+    console.log('Testing playback scopes...')
+    const data = await spotifyApiRequest('/me/player/devices')
+    console.log('Playback scopes test passed, devices:', data.devices?.length || 0)
+    return true
+  } catch (error) {
+    console.error('Playback scopes test failed:', error)
     return false
   }
 }
@@ -415,7 +430,17 @@ export function getSpotifyAuthUrl(): string {
     state: state,
   })
   
-  return `https://accounts.spotify.com/authorize?${params}`
+  const authUrl = `https://accounts.spotify.com/authorize?${params}`
+  
+  // Debug: Log the authorization URL
+  if (process.env.NODE_ENV === 'development') {
+    console.log('Spotify Auth URL:', authUrl)
+    console.log('Client ID:', SPOTIFY_CLIENT_ID)
+    console.log('Redirect URI:', SPOTIFY_REDIRECT_URI)
+    console.log('Scopes:', SPOTIFY_SCOPES)
+  }
+  
+  return authUrl
 }
 
 export function isAuthenticated(): boolean {
@@ -466,6 +491,13 @@ export function useSpotifyPlayback(intervalMs: number = 10000) {
         const isTokenValid = await testTokenValidity()
         if (!isTokenValid) {
           setError('Invalid or expired token - please re-authenticate')
+          return
+        }
+        
+        // Test if token has playback scopes
+        const hasPlaybackScopes = await testPlaybackScopes()
+        if (!hasPlaybackScopes) {
+          setError('Token missing playback scopes - please re-authenticate with proper permissions')
           return
         }
         
