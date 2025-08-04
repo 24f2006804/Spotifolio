@@ -154,6 +154,9 @@ async function refreshAccessToken(refreshToken: string): Promise<SpotifyTokens |
 async function getValidToken(): Promise<string | null> {
   // First, try to use the hardcoded token if available
   if (HARDCODED_ACCESS_TOKEN) {
+    if (process.env.NODE_ENV === 'development') {
+      console.log('Using hardcoded access token')
+    }
     return HARDCODED_ACCESS_TOKEN
   }
   
@@ -162,16 +165,25 @@ async function getValidToken(): Promise<string | null> {
   
   if (!tokens) {
     // No tokens available, need to authenticate
+    if (process.env.NODE_ENV === 'development') {
+      console.log('No tokens available, need to authenticate')
+    }
     return null
   }
   
   // Check if token is expired or will expire soon (within 5 minutes)
   if (Date.now() >= tokens.expires_at - (5 * 60 * 1000)) {
     // Token expired or will expire soon, refresh it
+    if (process.env.NODE_ENV === 'development') {
+      console.log('Token expired, refreshing...')
+    }
     const newTokens = await refreshAccessToken(tokens.refresh_token)
     return newTokens?.access_token || null
   }
   
+  if (process.env.NODE_ENV === 'development') {
+    console.log('Using stored OAuth token')
+  }
   return tokens.access_token
 }
 
@@ -183,6 +195,12 @@ async function spotifyApiRequest(endpoint: string, options: RequestInit = {}): P
   const token = await getValidToken()
   if (!token) {
     throw new Error('No valid access token - please authenticate with Spotify')
+  }
+  
+  // Debug: Log the request (only in development)
+  if (process.env.NODE_ENV === 'development') {
+    console.log(`Making Spotify API request to: ${SPOTIFY_API_BASE}${endpoint}`)
+    console.log('Token available:', !!token)
   }
   
   const response = await fetch(`${SPOTIFY_API_BASE}${endpoint}`, {
@@ -265,7 +283,7 @@ export async function getCurrentlyPlaying(): Promise<SpotifyPlaybackState | null
 // Get playback state
 export async function getPlaybackState(): Promise<SpotifyPlaybackState | null> {
   try {
-    const data = await spotifyApiRequest('/me/player')
+    const data = await spotifyApiRequest('/me/player/currently-playing')
     return data
   } catch (error) {
     console.error('Error getting playback state:', error)
@@ -381,11 +399,12 @@ export function logout(): void {
   clearTokens()
 }
 
-// Hook for real-time playback updates
-export function useSpotifyPlayback(intervalMs: number = 3000) {
+// Hook for real-time playback updates with lazy loading and error handling
+export function useSpotifyPlayback(intervalMs: number = 10000) {
   const [playbackState, setPlaybackState] = useState<SpotifyPlaybackState | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [lastUpdate, setLastUpdate] = useState<number>(0)
   
   useEffect(() => {
     if (!isAuthenticated()) {
@@ -394,9 +413,16 @@ export function useSpotifyPlayback(intervalMs: number = 3000) {
     }
     
     let intervalId: NodeJS.Timeout
+    let retryCount = 0
+    const maxRetries = 3
     
     const updatePlaybackState = async () => {
+      // Prevent multiple simultaneous requests
       if (isLoading) return
+      
+      // Throttle requests - don't make requests too frequently
+      const now = Date.now()
+      if (now - lastUpdate < 5000) return // Minimum 5 seconds between requests
       
       setIsLoading(true)
       setError(null)
@@ -404,26 +430,37 @@ export function useSpotifyPlayback(intervalMs: number = 3000) {
       try {
         const state = await getPlaybackState()
         setPlaybackState(state)
+        setLastUpdate(now)
+        retryCount = 0 // Reset retry count on success
       } catch (error) {
         console.error('Error updating playback state:', error)
-        setError(error instanceof Error ? error.message : 'Failed to get playback state')
+        retryCount++
+        
+        if (retryCount >= maxRetries) {
+          setError(error instanceof Error ? error.message : 'Failed to get playback state')
+          // Stop making requests after max retries
+          if (intervalId) {
+            clearInterval(intervalId)
+          }
+        }
       } finally {
         setIsLoading(false)
       }
     }
     
-    // Initial update
-    updatePlaybackState()
+    // Initial update with delay to prevent immediate spam
+    const initialTimeout = setTimeout(updatePlaybackState, 1000)
     
-    // Set up interval
+    // Set up interval with longer intervals to reduce API calls
     intervalId = setInterval(updatePlaybackState, intervalMs)
     
     return () => {
+      clearTimeout(initialTimeout)
       if (intervalId) {
         clearInterval(intervalId)
       }
     }
-  }, [intervalMs, isLoading])
+  }, [intervalMs, isLoading, lastUpdate])
   
   return { playbackState, isLoading, error }
 } 
