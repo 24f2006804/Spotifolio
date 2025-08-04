@@ -393,7 +393,6 @@ export async function fetchGitHubProjects(): Promise<{
 }> {
   // Check cache
   if (projectsCache.data && Date.now() - projectsCache.timestamp < CACHE_DURATION) {
-    console.log('Returning cached GitHub projects.')
     return projectsCache.data
   }
 
@@ -412,8 +411,6 @@ export async function fetchGitHubProjects(): Promise<{
       
       // If primary username fails, try fallback username
       if (!response.ok) {
-        console.log(`Primary username ${GITHUB_USERNAME} failed, trying fallback username ${FALLBACK_USERNAME}`)
-        
         const fallbackController = new AbortController()
         const fallbackTimeoutId = setTimeout(() => fallbackController.abort(), 10000)
         
@@ -448,7 +445,6 @@ export async function fetchGitHubProjects(): Promise<{
     }
 
     // Process each repository
-    console.log(`Processing ${publicRepos.length} repositories...`)
     
     for (const repo of publicRepos) {
       // Fetch README content for better classification
@@ -466,13 +462,6 @@ export async function fetchGitHubProjects(): Promise<{
           repo.name.toLowerCase().includes('vibe') ||
           repo.name.toLowerCase().includes('midas') ||
           repo.stargazers_count >= 5) {
-        console.log(`Project: ${repo.name}`)
-        console.log(`  Language: ${repo.language}`)
-        console.log(`  Description: ${repo.description}`)
-        console.log(`  Topics: ${repo.topics.join(', ')}`)
-        console.log(`  Stars: ${repo.stargazers_count}`)
-        console.log(`  Categories: ${categories.join(', ')}`)
-        console.log(`  README length: ${readmeContent.length}`)
         const allText = [
           repo.name.toLowerCase(),
           repo.description?.toLowerCase() || '',
@@ -480,7 +469,6 @@ export async function fetchGitHubProjects(): Promise<{
           ...repo.topics.map(t => t.toLowerCase()),
           readmeContent.toLowerCase()
         ].join(' ')
-        console.log(`  All text preview: ${allText.substring(0, 200)}...`)
       }
       
       const project: CategorizedProject = {
@@ -502,12 +490,6 @@ export async function fetchGitHubProjects(): Promise<{
       })
     }
     
-    // Log final counts
-    console.log('Final categorization:')
-    console.log(`  AI Projects: ${categorized['AI Projects'].length}`)
-    console.log(`  Web Projects: ${categorized['Web Projects'].length}`)
-    console.log(`  Blockchain Projects: ${categorized['Blockchain Projects'].length}`)
-
     // Sort by stars (no limit - show all projects)
     Object.keys(categorized).forEach(category => {
       categorized[category as keyof typeof categorized] = categorized[category as keyof typeof categorized]
@@ -522,7 +504,6 @@ export async function fetchGitHubProjects(): Promise<{
 
     return categorized
   } catch (error) {
-    console.error('Error fetching GitHub projects:', error)
     return {
       'AI Projects': [],
       'Web Projects': [],

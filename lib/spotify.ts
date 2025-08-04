@@ -53,11 +53,7 @@ const HARDCODED_REFRESH_TOKEN = process.env.NEXT_PUBLIC_SPOTIFY_REFRESH_TOKEN ||
 
 // Debug: Log configuration in development
 if (typeof window !== 'undefined' && process.env.NODE_ENV === 'development') {
-  console.log('Spotify Configuration:')
-  console.log('Client ID:', SPOTIFY_CLIENT_ID)
-  console.log('Redirect URI:', SPOTIFY_REDIRECT_URI)
-  console.log('Hardcoded Access Token exists:', !!HARDCODED_ACCESS_TOKEN)
-  console.log('Hardcoded Refresh Token exists:', !!HARDCODED_REFRESH_TOKEN)
+
 }
 const SPOTIFY_SCOPES = [
   'user-read-playback-state',
@@ -163,16 +159,11 @@ async function refreshAccessToken(refreshToken: string): Promise<SpotifyTokens |
 async function getValidToken(): Promise<string | null> {
   // Debug: Check if environment variable is being read
   if (process.env.NODE_ENV === 'development') {
-    console.log('Environment variable check:')
-    console.log('NEXT_PUBLIC_SPOTIFY_ACCESS_TOKEN exists:', !!process.env.NEXT_PUBLIC_SPOTIFY_ACCESS_TOKEN)
-    console.log('HARDCODED_ACCESS_TOKEN exists:', !!HARDCODED_ACCESS_TOKEN)
-    console.log('HARDCODED_REFRESH_TOKEN exists:', !!HARDCODED_REFRESH_TOKEN)
   }
   
   // First, try to use the hardcoded token if available
   if (HARDCODED_ACCESS_TOKEN) {
     if (process.env.NODE_ENV === 'development') {
-      console.log('Using hardcoded access token')
     }
     return HARDCODED_ACCESS_TOKEN
   }
@@ -183,7 +174,6 @@ async function getValidToken(): Promise<string | null> {
   if (!tokens) {
     // No tokens available, need to authenticate
     if (process.env.NODE_ENV === 'development') {
-      console.log('No tokens available, need to authenticate')
     }
     return null
   }
@@ -192,14 +182,12 @@ async function getValidToken(): Promise<string | null> {
   if (Date.now() >= tokens.expires_at - (5 * 60 * 1000)) {
     // Token expired or will expire soon, refresh it
     if (process.env.NODE_ENV === 'development') {
-      console.log('Token expired, refreshing...')
     }
     const newTokens = await refreshAccessToken(tokens.refresh_token)
     return newTokens?.access_token || null
   }
   
   if (process.env.NODE_ENV === 'development') {
-    console.log('Using stored OAuth token')
   }
   return tokens.access_token
 }
@@ -207,12 +195,10 @@ async function getValidToken(): Promise<string | null> {
 // New function to refresh hardcoded token
 async function refreshHardcodedToken(): Promise<string | null> {
   if (!HARDCODED_REFRESH_TOKEN) {
-    console.log('No hardcoded refresh token available')
     return null
   }
 
   try {
-    console.log('Refreshing hardcoded access token...')
     
     // Use our server-side API route to refresh the token securely
     const response = await fetch('/api/spotify/refresh', {
@@ -232,7 +218,6 @@ async function refreshHardcodedToken(): Promise<string | null> {
     }
 
     const data = await response.json()
-    console.log('Successfully refreshed hardcoded access token')
     
     // Return the new token
     return data.access_token
@@ -252,13 +237,6 @@ async function spotifyApiRequest(endpoint: string, options: RequestInit = {}): P
     throw new Error('No valid access token - please authenticate with Spotify')
   }
   
-  // Debug: Log the request (only in development)
-  if (process.env.NODE_ENV === 'development') {
-    console.log(`Making Spotify API request to: ${SPOTIFY_API_BASE}${endpoint}`)
-    console.log('Token available:', !!token)
-    console.log('Token length:', token?.length)
-    console.log('Token starts with:', token?.substring(0, 20) + '...')
-  }
   
   const response = await fetch(`${SPOTIFY_API_BASE}${endpoint}`, {
     ...options,
@@ -270,11 +248,10 @@ async function spotifyApiRequest(endpoint: string, options: RequestInit = {}): P
   })
   
   if (response.status === 401) {
-    console.error('401 Unauthorized - Token is invalid or expired')
     
     // If using hardcoded token and it's expired, try to refresh it
     if (HARDCODED_ACCESS_TOKEN && token === HARDCODED_ACCESS_TOKEN) {
-      console.log('Hardcoded token expired, trying to refresh...')
+      
       const newToken = await refreshHardcodedToken()
       if (newToken) {
         // Retry the request with new token
@@ -292,7 +269,7 @@ async function spotifyApiRequest(endpoint: string, options: RequestInit = {}): P
         }
       }
       // If refresh fails, try OAuth tokens as fallback
-      console.log('Hardcoded token refresh failed, trying OAuth tokens...')
+      
       const tokens = getStoredTokens()
       if (tokens) {
         const newTokens = await refreshAccessToken(tokens.refresh_token)
@@ -339,7 +316,7 @@ async function spotifyApiRequest(endpoint: string, options: RequestInit = {}): P
   }
   
   if (response.status === 404) {
-    console.error('404 Not Found - This usually means the user is not actively playing music')
+    
     // For 404, return null instead of throwing error - this is normal when not playing
     return null
   }
@@ -355,8 +332,7 @@ async function spotifyApiRequest(endpoint: string, options: RequestInit = {}): P
 export async function testTokenValidity(): Promise<boolean> {
   try {
     const data = await spotifyApiRequest('/me')
-    console.log('Token is valid, user profile:', data.display_name)
-    console.log('User product:', data.product) // free/premium
+    
     return true
   } catch (error) {
     console.error('Token validation failed:', error)
@@ -367,9 +343,9 @@ export async function testTokenValidity(): Promise<boolean> {
 // Test if token has playback scopes
 export async function testPlaybackScopes(): Promise<boolean> {
   try {
-    console.log('Testing playback scopes...')
+    
     const data = await spotifyApiRequest('/me/player/devices')
-    console.log('Playback scopes test passed, devices:', data.devices?.length || 0)
+    
     return true
   } catch (error) {
     console.error('Playback scopes test failed:', error)
@@ -380,9 +356,9 @@ export async function testPlaybackScopes(): Promise<boolean> {
 // Get currently playing track
 export async function getCurrentlyPlaying(): Promise<SpotifyPlaybackState | null> {
   try {
-    console.log('Fetching currently playing track...')
+    
     const data = await spotifyApiRequest('/me/player/currently-playing')
-    console.log('Currently playing response:', data)
+    
     return data
   } catch (error) {
     console.error('Error getting currently playing:', error)
@@ -393,9 +369,9 @@ export async function getCurrentlyPlaying(): Promise<SpotifyPlaybackState | null
 // Get playback state
 export async function getPlaybackState(): Promise<SpotifyPlaybackState | null> {
   try {
-    console.log('Fetching playback state...')
+    
     const data = await spotifyApiRequest('/me/player/currently-playing')
-    console.log('Playback state response:', data)
+    
     return data
   } catch (error) {
     console.error('Error getting playback state:', error)
@@ -406,9 +382,9 @@ export async function getPlaybackState(): Promise<SpotifyPlaybackState | null> {
 // Get available devices
 export async function getAvailableDevices(): Promise<SpotifyDevice[]> {
   try {
-    console.log('Fetching available devices...')
+    
     const data = await spotifyApiRequest('/me/player/devices')
-    console.log('Available devices:', data.devices)
+    
     return data.devices || []
   } catch (error) {
     console.error('Error getting devices:', error)
@@ -504,18 +480,6 @@ export function getSpotifyAuthUrl(): string {
   
   const authUrl = `${baseUrl}?${params.toString()}`
   
-  // Debug: Log the authorization URL
-  if (process.env.NODE_ENV === 'development') {
-    console.log('=== SPOTIFY AUTH DEBUG ===')
-    console.log('Base URL:', baseUrl)
-    console.log('Client ID:', SPOTIFY_CLIENT_ID)
-    console.log('Redirect URI:', SPOTIFY_REDIRECT_URI)
-    console.log('Scopes:', SPOTIFY_SCOPES)
-    console.log('State:', state)
-    console.log('Final Auth URL:', authUrl)
-    console.log('========================')
-  }
-  
   return authUrl
 }
 
@@ -579,7 +543,6 @@ export function useSpotifyPlayback(intervalMs: number = 10000) {
         
         // Check available devices
         const devices = await getAvailableDevices()
-        console.log('Active devices:', devices.filter(d => d.is_active))
         
         const state = await getPlaybackState()
         setPlaybackState(state)

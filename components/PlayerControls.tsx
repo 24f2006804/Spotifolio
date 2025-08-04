@@ -27,47 +27,34 @@ export function PlayerControls({ onToggleRightSidebar, isRightSidebarOpen }: Pla
   const [volume, setVolumeState] = useState(50)
 
   const handlePlayPause = async () => {
-    if (!isAuthenticated()) {
-      // Only redirect to auth if we don't have a hardcoded token
-      const hardcodedToken = process.env.NEXT_PUBLIC_SPOTIFY_ACCESS_TOKEN
-      if (!hardcodedToken) {
-        window.location.href = getSpotifyAuthUrl()
-      }
-      return
-    }
-
-    if (playbackState?.is_playing) {
-      await pause()
-    } else {
-      await play()
-    }
+    // Disabled - buttons are for display only
+    console.log('Play/Pause button clicked (disabled)')
   }
 
   const handleSkipNext = async () => {
-    await skipToNext()
+    // Disabled - buttons are for display only
+    console.log('Skip Next button clicked (disabled)')
   }
 
   const handleSkipPrevious = async () => {
-    await skipToPrevious()
+    // Disabled - buttons are for display only
+    console.log('Skip Previous button clicked (disabled)')
   }
 
   const handleVolumeChange = async (newVolume: number) => {
-    setVolumeState(newVolume)
-    await setVolume(newVolume)
+    // Disabled - volume control is for display only
+    setVolumeState(newVolume) // Still update local state for visual feedback
+    console.log('Volume changed to:', newVolume, '(disabled)')
   }
 
   const handleShuffle = async () => {
-    if (playbackState) {
-      await setShuffle(!playbackState.shuffle_state)
-    }
+    // Disabled - buttons are for display only
+    console.log('Shuffle button clicked (disabled)')
   }
 
   const handleRepeat = async () => {
-    if (playbackState) {
-      const currentMode = playbackState.repeat_state
-      const nextMode = currentMode === 'off' ? 'context' : currentMode === 'context' ? 'track' : 'off'
-      await setRepeatMode(nextMode)
-    }
+    // Disabled - buttons are for display only
+    console.log('Repeat button clicked (disabled)')
   }
 
   const formatTime = (ms: number) => {

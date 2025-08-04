@@ -37,7 +37,6 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: data.error_description || data.error }, { status: response.status })
     }
 
-    console.log('Successfully refreshed Spotify token')
     return NextResponse.json(data)
   } catch (error) {
     console.error('Error refreshing Spotify token:', error)
