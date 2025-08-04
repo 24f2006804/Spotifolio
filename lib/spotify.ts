@@ -50,6 +50,14 @@ const SPOTIFY_CLIENT_ID = process.env.NEXT_PUBLIC_SPOTIFY_CLIENT_ID || ''
 const SPOTIFY_CLIENT_SECRET = process.env.SPOTIFY_CLIENT_SECRET || ''
 const SPOTIFY_REDIRECT_URI = process.env.NEXT_PUBLIC_SPOTIFY_REDIRECT_URI || 'https://agnij.vercel.app/api/auth/spotify/callback'
 const HARDCODED_ACCESS_TOKEN = process.env.NEXT_PUBLIC_SPOTIFY_ACCESS_TOKEN || ''
+
+// Debug: Log configuration in development
+if (typeof window !== 'undefined' && process.env.NODE_ENV === 'development') {
+  console.log('Spotify Configuration:')
+  console.log('Client ID:', SPOTIFY_CLIENT_ID)
+  console.log('Redirect URI:', SPOTIFY_REDIRECT_URI)
+  console.log('Hardcoded Token exists:', !!HARDCODED_ACCESS_TOKEN)
+}
 const SPOTIFY_SCOPES = [
   'user-read-playback-state',
   'user-modify-playback-state',
@@ -422,22 +430,27 @@ export async function setRepeatMode(mode: 'off' | 'track' | 'context', deviceId?
 export function getSpotifyAuthUrl(): string {
   const state = Math.random().toString(36).substring(7)
   
-  const params = new URLSearchParams({
-    response_type: 'code',
-    client_id: SPOTIFY_CLIENT_ID,
-    scope: SPOTIFY_SCOPES,
-    redirect_uri: SPOTIFY_REDIRECT_URI,
-    state: state,
-  })
+  // Build the authorization URL manually to ensure it's correct
+  const baseUrl = 'https://accounts.spotify.com/authorize'
+  const params = new URLSearchParams()
+  params.append('response_type', 'code')
+  params.append('client_id', SPOTIFY_CLIENT_ID)
+  params.append('scope', SPOTIFY_SCOPES)
+  params.append('redirect_uri', SPOTIFY_REDIRECT_URI)
+  params.append('state', state)
   
-  const authUrl = `https://accounts.spotify.com/authorize?${params}`
+  const authUrl = `${baseUrl}?${params.toString()}`
   
   // Debug: Log the authorization URL
   if (process.env.NODE_ENV === 'development') {
-    console.log('Spotify Auth URL:', authUrl)
+    console.log('=== SPOTIFY AUTH DEBUG ===')
+    console.log('Base URL:', baseUrl)
     console.log('Client ID:', SPOTIFY_CLIENT_ID)
     console.log('Redirect URI:', SPOTIFY_REDIRECT_URI)
     console.log('Scopes:', SPOTIFY_SCOPES)
+    console.log('State:', state)
+    console.log('Final Auth URL:', authUrl)
+    console.log('========================')
   }
   
   return authUrl

@@ -116,17 +116,29 @@ export function PlayerControls({ onToggleRightSidebar, isRightSidebarOpen }: Pla
                 {error ? 'Authentication error - click to reconnect' : isAuthenticated() ? 'Start playing music to see it here' : 'Click to connect your Spotify account'}
               </p>
               {!isAuthenticated() && (
-                <button
-                  onClick={() => {
-                    console.log('Connect Spotify button clicked')
-                    const authUrl = getSpotifyAuthUrl()
-                    console.log('Redirecting to:', authUrl)
-                    window.location.href = authUrl
-                  }}
-                  className="mt-2 px-4 py-2 bg-green-500 text-black rounded-full text-sm font-semibold hover:bg-green-400 transition-colors"
-                >
-                  Connect Spotify
-                </button>
+                <div className="mt-2 space-y-2">
+                  <button
+                    onClick={() => {
+                      console.log('Connect Spotify button clicked')
+                      const authUrl = getSpotifyAuthUrl()
+                      console.log('Redirecting to:', authUrl)
+                      window.location.href = authUrl
+                    }}
+                    className="px-4 py-2 bg-green-500 text-black rounded-full text-sm font-semibold hover:bg-green-400 transition-colors"
+                  >
+                    Connect Spotify
+                  </button>
+                  <button
+                    onClick={() => {
+                      const authUrl = getSpotifyAuthUrl()
+                      console.log('Auth URL for testing:', authUrl)
+                      alert(`Auth URL: ${authUrl}`)
+                    }}
+                    className="px-4 py-2 bg-blue-500 text-white rounded-full text-sm font-semibold hover:bg-blue-400 transition-colors"
+                  >
+                    Test URL (No Redirect)
+                  </button>
+                </div>
               )}
             </div>
           </>
@@ -210,28 +222,23 @@ export function PlayerControls({ onToggleRightSidebar, isRightSidebarOpen }: Pla
         >
           <User size={18} />
         </button>
-        {isAuthenticated() ? (
-          <button
-            onClick={() => window.open('https://open.spotify.com', '_blank')}
-            className="p-2 rounded hover:bg-[#1F1F1F] transition-colors text-gray-400 hover:text-white"
-            title="Open Spotify"
-          >
-            <Music size={18} />
-          </button>
-        ) : (
-          <button
-            onClick={() => {
-              console.log('Music icon Connect Spotify button clicked')
+        <button
+          onClick={() => {
+            if (isAuthenticated()) {
               const authUrl = getSpotifyAuthUrl()
               console.log('Redirecting to:', authUrl)
               window.location.href = authUrl
-            }}
-            className="p-2 rounded hover:bg-[#1F1F1F] transition-colors text-green-500 hover:text-green-400"
-            title="Connect Spotify"
-          >
-            <Music size={18} />
-          </button>
-        )}
+            }
+          }}
+          className={`p-2 rounded hover:bg-[#1F1F1F] transition-colors ${
+            isAuthenticated() 
+              ? 'text-gray-400 hover:text-white' 
+              : 'text-green-500 hover:text-green-400'
+          }`}
+          title={isAuthenticated() ? "Open Spotify" : "Connect Spotify"}
+        >
+          <Music size={18} />
+        </button>
       </div>
     </div>
   )

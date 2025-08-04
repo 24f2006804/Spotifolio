@@ -41,6 +41,15 @@ export async function GET(request: NextRequest) {
 
     const tokenData = await tokenResponse.json()
 
+    // Log the tokens for debugging
+    console.log('=== SPOTIFY TOKENS RECEIVED ===')
+    console.log('Access Token:', tokenData.access_token)
+    console.log('Refresh Token:', tokenData.refresh_token)
+    console.log('Token Type:', tokenData.token_type)
+    console.log('Expires In:', tokenData.expires_in)
+    console.log('Scope:', tokenData.scope)
+    console.log('================================')
+
     // Redirect to frontend with tokens
     const redirectUrl = new URL('/', request.url)
     redirectUrl.searchParams.set('access_token', tokenData.access_token)
