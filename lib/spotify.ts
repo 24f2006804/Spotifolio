@@ -300,7 +300,9 @@ export async function testTokenValidity(): Promise<boolean> {
 // Get currently playing track
 export async function getCurrentlyPlaying(): Promise<SpotifyPlaybackState | null> {
   try {
+    console.log('Fetching currently playing track...')
     const data = await spotifyApiRequest('/me/player/currently-playing')
+    console.log('Currently playing response:', data)
     return data
   } catch (error) {
     console.error('Error getting currently playing:', error)
@@ -311,7 +313,9 @@ export async function getCurrentlyPlaying(): Promise<SpotifyPlaybackState | null
 // Get playback state
 export async function getPlaybackState(): Promise<SpotifyPlaybackState | null> {
   try {
+    console.log('Fetching playback state...')
     const data = await spotifyApiRequest('/me/player/currently-playing')
+    console.log('Playback state response:', data)
     return data
   } catch (error) {
     console.error('Error getting playback state:', error)
@@ -322,7 +326,9 @@ export async function getPlaybackState(): Promise<SpotifyPlaybackState | null> {
 // Get available devices
 export async function getAvailableDevices(): Promise<SpotifyDevice[]> {
   try {
+    console.log('Fetching available devices...')
     const data = await spotifyApiRequest('/me/player/devices')
+    console.log('Available devices:', data.devices)
     return data.devices || []
   } catch (error) {
     console.error('Error getting devices:', error)
@@ -462,6 +468,10 @@ export function useSpotifyPlayback(intervalMs: number = 10000) {
           setError('Invalid or expired token - please re-authenticate')
           return
         }
+        
+        // Check available devices
+        const devices = await getAvailableDevices()
+        console.log('Active devices:', devices.filter(d => d.is_active))
         
         const state = await getPlaybackState()
         setPlaybackState(state)
