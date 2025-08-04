@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 
-const SPOTIFY_CLIENT_ID = process.env.SPOTIFY_CLIENT_ID || ''
+const SPOTIFY_CLIENT_ID = process.env.NEXT_PUBLIC_SPOTIFY_CLIENT_ID || ''
 const SPOTIFY_CLIENT_SECRET = process.env.SPOTIFY_CLIENT_SECRET || ''
-const SPOTIFY_REDIRECT_URI = process.env.SPOTIFY_REDIRECT_URI || 'http://localhost:3000/api/auth/spotify/callback'
+const SPOTIFY_REDIRECT_URI = 'http://192.168.0.104:3000/api/auth/spotify/callback'
 
 export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams
@@ -34,6 +34,8 @@ export async function GET(request: NextRequest) {
     })
 
     if (!tokenResponse.ok) {
+      const errorData = await tokenResponse.text()
+      console.error('Token exchange failed:', tokenResponse.status, errorData)
       throw new Error(`Token exchange failed: ${tokenResponse.status}`)
     }
 

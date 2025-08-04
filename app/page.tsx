@@ -20,10 +20,13 @@ function SpotifyTokenHandler() {
     const expiresIn = searchParams.get('expires_in')
 
     if (accessToken && refreshToken && expiresIn) {
-      // Save tokens to localStorage
-      localStorage.setItem('spotify_access_token', accessToken)
-      localStorage.setItem('spotify_refresh_token', refreshToken)
-      localStorage.setItem('spotify_token_expiry', (Date.now() + parseInt(expiresIn) * 1000).toString())
+      // Save tokens to localStorage in the new format
+      const tokens = {
+        access_token: accessToken,
+        refresh_token: refreshToken,
+        expires_at: Date.now() + parseInt(expiresIn) * 1000
+      }
+      localStorage.setItem('spotify_tokens', JSON.stringify(tokens))
       
       // Clear URL parameters
       window.history.replaceState({}, document.title, window.location.pathname)

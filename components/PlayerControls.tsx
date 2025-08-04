@@ -23,10 +23,15 @@ interface PlayerControlsProps {
 }
 
 export function PlayerControls({ onToggleRightSidebar, isRightSidebarOpen }: PlayerControlsProps) {
-  const { playbackState, isLoading } = useSpotifyPlayback(3000)
+  const { playbackState, isLoading, error } = useSpotifyPlayback(3000)
   const [volume, setVolumeState] = useState(50)
 
   const handlePlayPause = async () => {
+    if (!isAuthenticated()) {
+      window.location.href = getSpotifyAuthUrl()
+      return
+    }
+
     if (playbackState?.is_playing) {
       await pause()
     } else {
@@ -100,8 +105,12 @@ export function PlayerControls({ onToggleRightSidebar, isRightSidebarOpen }: Pla
               <Music size={20} className="text-gray-400" />
             </div>
             <div>
-              <p className="font-semibold text-sm md:text-base">Not Playing</p>
-              <p className="text-xs md:text-sm text-gray-400">Start playing music to see it here</p>
+              <p className="font-semibold text-sm md:text-base">
+                {error ? 'Spotify Unavailable' : isAuthenticated() ? 'Not Playing' : 'Connect Spotify'}
+              </p>
+              <p className="text-xs md:text-sm text-gray-400">
+                {error ? 'Authentication error - click to reconnect' : isAuthenticated() ? 'Start playing music to see it here' : 'Click to connect your Spotify account'}
+              </p>
             </div>
           </>
         )}
@@ -184,13 +193,23 @@ export function PlayerControls({ onToggleRightSidebar, isRightSidebarOpen }: Pla
         >
           <User size={18} />
         </button>
-        <button
-          onClick={() => window.open('https://open.spotify.com', '_blank')}
-          className="p-2 rounded hover:bg-[#1F1F1F] transition-colors text-gray-400 hover:text-white"
-          title="Open Spotify"
-        >
-          <Music size={18} />
-        </button>
+        {isAuthenticated() ? (
+          <button
+            onClick={logout}
+            className="p-2 rounded hover:bg-[#1F1F1F] transition-colors text-gray-400 hover:text-white"
+            title="Disconnect Spotify"
+          >
+            <Music size={18} />
+          </button>
+        ) : (
+          <button
+            onClick={() => window.location.href = getSpotifyAuthUrl()}
+            className="p-2 rounded hover:bg-[#1F1F1F] transition-colors text-gray-400 hover:text-white"
+            title="Connect Spotify"
+          >
+            <Music size={18} />
+          </button>
+        )}
       </div>
     </div>
   )
