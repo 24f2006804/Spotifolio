@@ -152,6 +152,13 @@ async function refreshAccessToken(refreshToken: string): Promise<SpotifyTokens |
 
 // Get valid access token (with automatic refresh)
 async function getValidToken(): Promise<string | null> {
+  // Debug: Check if environment variable is being read
+  if (process.env.NODE_ENV === 'development') {
+    console.log('Environment variable check:')
+    console.log('NEXT_PUBLIC_SPOTIFY_ACCESS_TOKEN exists:', !!process.env.NEXT_PUBLIC_SPOTIFY_ACCESS_TOKEN)
+    console.log('HARDCODED_ACCESS_TOKEN exists:', !!HARDCODED_ACCESS_TOKEN)
+  }
+  
   // First, try to use the hardcoded token if available
   if (HARDCODED_ACCESS_TOKEN) {
     if (process.env.NODE_ENV === 'development') {
@@ -201,6 +208,8 @@ async function spotifyApiRequest(endpoint: string, options: RequestInit = {}): P
   if (process.env.NODE_ENV === 'development') {
     console.log(`Making Spotify API request to: ${SPOTIFY_API_BASE}${endpoint}`)
     console.log('Token available:', !!token)
+    console.log('Token length:', token?.length)
+    console.log('Token starts with:', token?.substring(0, 20) + '...')
   }
   
   const response = await fetch(`${SPOTIFY_API_BASE}${endpoint}`, {
@@ -213,6 +222,7 @@ async function spotifyApiRequest(endpoint: string, options: RequestInit = {}): P
   })
   
   if (response.status === 401) {
+    console.error('401 Unauthorized - Token is invalid or expired')
     // If using hardcoded token and it's expired, try OAuth flow
     if (HARDCODED_ACCESS_TOKEN && token === HARDCODED_ACCESS_TOKEN) {
       console.log('Hardcoded token expired, trying OAuth tokens...')
@@ -262,11 +272,29 @@ async function spotifyApiRequest(endpoint: string, options: RequestInit = {}): P
     }
   }
   
+  if (response.status === 404) {
+    console.error('404 Not Found - This usually means the user is not actively playing music')
+    // For 404, return null instead of throwing error - this is normal when not playing
+    return null
+  }
+  
   if (!response.ok) {
     throw new Error(`Spotify API error: ${response.status}`)
   }
   
   return response.json()
+}
+
+// Test token validity by calling a simple endpoint
+export async function testTokenValidity(): Promise<boolean> {
+  try {
+    const data = await spotifyApiRequest('/me')
+    console.log('Token is valid, user profile:', data.display_name)
+    return true
+  } catch (error) {
+    console.error('Token validation failed:', error)
+    return false
+  }
 }
 
 // Get currently playing track
@@ -428,6 +456,13 @@ export function useSpotifyPlayback(intervalMs: number = 10000) {
       setError(null)
       
       try {
+        // First, test if the token is valid
+        const isTokenValid = await testTokenValidity()
+        if (!isTokenValid) {
+          setError('Invalid or expired token - please re-authenticate')
+          return
+        }
+        
         const state = await getPlaybackState()
         setPlaybackState(state)
         setLastUpdate(now)
